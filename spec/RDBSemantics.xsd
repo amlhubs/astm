@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="ASTMSemantics" xmlns:null_1="DeclarationAndDefinition" xmlns:null_2="ASTMCore" xmlns:null_3="ASTMSyntax" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="ASTMSemantics">
+<xsd:import namespace="ASTMSyntax" schemaLocation="ASTMSyntax.xsd"/>
+<xsd:import namespace="ASTMCore" schemaLocation="ASTMCore.xsd"/>
+<xsd:import namespace="DeclarationAndDefinition" schemaLocation="DeclarationAndDefinition.xsd"/>
+<xsd:import namespace="http://www.omg.org/XMI" schemaLocation="XMI.xsd"/>
+<xsd:complexType name="AggregateScope">
+<xsd:complexContent>
+<xsd:extension base="Scope"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="AggregateScope" type="AggregateScope"/>
+<xsd:complexType name="BlockScope">
+<xsd:complexContent>
+<xsd:extension base="Scope"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BlockScope" type="BlockScope"/>
+<xsd:complexType name="FunctionScope">
+<xsd:complexContent>
+<xsd:extension base="Scope">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="scopeOpenedBy" type="null_1:FunctionDefinition"/>
+</xsd:choice>
+<xsd:attribute name="scopeOpenedBy" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="FunctionScope" type="FunctionScope"/>
+<xsd:complexType name="GASTMSemanticObject">
+<xsd:complexContent>
+<xsd:extension base="null_2:GASTMObject"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="GASTMSemanticObject" type="GASTMSemanticObject"/>
+<xsd:complexType name="GlobalScope">
+<xsd:complexContent>
+<xsd:extension base="Scope"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="GlobalScope" type="GlobalScope"/>
+<xsd:complexType name="ProgramScope">
+<xsd:complexContent>
+<xsd:extension base="Scope"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ProgramScope" type="ProgramScope"/>
+<xsd:complexType name="Project">
+<xsd:complexContent>
+<xsd:extension base="GASTMSemanticObject">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="files" type="null_3:CompilationUnit"/>
+<xsd:element name="outerScope" type="GlobalScope"/>
+</xsd:choice>
+<xsd:attribute name="files" type="xsd:string"/>
+<xsd:attribute name="outerScope" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Project" type="Project"/>
+<xsd:complexType name="Scope">
+<xsd:complexContent>
+<xsd:extension base="GASTMSemanticObject">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="declOrDefn" type="null_1:DefinitionObject"/>
+<xsd:element name="childScope" type="Scope"/>
+<xsd:element name="openedBy" type="Scope"/>
+</xsd:choice>
+<xsd:attribute name="declOrDefn" type="xsd:string"/>
+<xsd:attribute name="childScope" type="xsd:string"/>
+<xsd:attribute name="openedBy" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Scope" type="Scope"/>
+</xsd:schema>

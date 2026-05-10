@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns:ASTMCore="ASTMCore" xmlns:ASTMSource="ASTMSource" xmlns:ASTMSyntax="ASTMSyntax" xmlns:Directives="Directives" xmlns:Expression="Expression" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="ASTMSyntax">
+  <xsd:import namespace="Directives" schemaLocation="ASTMCore.ASTMSyntax.DirectivesXMI.xsd"/>
+  <xsd:import namespace="Expression" schemaLocation="ASTMCore.ASTMSyntax.ExpressionXMI.xsd"/>
+  <xsd:import namespace="ASTMSource" schemaLocation="ASTMCore.ASTMSourceXMI.xsd"/>
+  <xsd:import namespace="ASTMCore" schemaLocation="ASTMCore-EmofXMI.xsd"/>
+  <xsd:complexType abstract="true" name="GASTMSyntaxObject">
+    <xsd:complexContent>
+      <xsd:extension base="ASTMCore:GASTMObject">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="locationInfo" type="ASTMSource:SourceLocation"/>
+          <xsd:element name="annotations" type="Expression:AnnotationExpression"/>
+          <xsd:element name="preProcessorElements" type="Directives:PreprocessorElement"/>
+        </xsd:choice>
+        <xsd:attribute name="locationInfo" type="xsd:string"/>
+        <xsd:attribute name="annotations" type="xsd:string"/>
+        <xsd:attribute name="preProcessorElements" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="GASTMSyntaxObject" type="ASTMSyntax:GASTMSyntaxObject"/>
+  <xsd:complexType abstract="true" name="MinorSyntaxObject">
+    <xsd:complexContent>
+      <xsd:extension base="ASTMSyntax:GASTMSyntaxObject"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="MinorSyntaxObject" type="ASTMSyntax:MinorSyntaxObject"/>
+</xsd:schema>

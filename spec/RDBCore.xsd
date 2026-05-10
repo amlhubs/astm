@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="ASTMCore" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="ASTMCore">
+<xsd:import namespace="http://www.omg.org/XMI" schemaLocation="XMI.xsd"/>
+<xsd:complexType name="GASTMObject">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element ref="xmi:Extension"/>
+</xsd:choice>
+<xsd:attribute ref="xmi:id"/>
+<xsd:attributeGroup ref="xmi:ObjectAttribs"/>
+</xsd:complexType>
+<xsd:element name="GASTMObject" type="GASTMObject"/>
+</xsd:schema>

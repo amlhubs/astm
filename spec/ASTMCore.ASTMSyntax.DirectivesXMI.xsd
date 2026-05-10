@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns:ASTMSource="ASTMSource" xmlns:ASTMSyntax="ASTMSyntax" xmlns:Directives="Directives" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="Directives">
+  <xsd:import namespace="ASTMSyntax" schemaLocation="ASTMCore.ASTMSyntaxXMI.xsd"/>
+  <xsd:import namespace="ASTMSource" schemaLocation="ASTMCore.ASTMSourceXMI.xsd"/>
+  <xsd:complexType name="Comment">
+    <xsd:complexContent>
+      <xsd:extension base="Directives:PreprocessorElement">
+        <xsd:attribute name="body" type="xsd:string" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Comment" type="Directives:Comment"/>
+  <xsd:complexType name="IncludeUnit">
+    <xsd:complexContent>
+      <xsd:extension base="Directives:PreprocessorElement">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="file" type="ASTMSource:SourceFileReference"/>
+        </xsd:choice>
+        <xsd:attribute name="file" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="IncludeUnit" type="Directives:IncludeUnit"/>
+  <xsd:complexType name="MacroCall">
+    <xsd:complexContent>
+      <xsd:extension base="Directives:PreprocessorElement">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="refersTo" type="Directives:MacroDefinition"/>
+        </xsd:choice>
+        <xsd:attribute name="refersTo" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="MacroCall" type="Directives:MacroCall"/>
+  <xsd:complexType name="MacroDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="Directives:PreprocessorElement">
+        <xsd:attribute name="macroName" type="xsd:string" use="required"/>
+        <xsd:attribute name="body" type="xsd:string" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="MacroDefinition" type="Directives:MacroDefinition"/>
+  <xsd:complexType abstract="true" name="PreprocessorElement">
+    <xsd:complexContent>
+      <xsd:extension base="ASTMSyntax:GASTMSyntaxObject"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="PreprocessorElement" type="Directives:PreprocessorElement"/>
+</xsd:schema>

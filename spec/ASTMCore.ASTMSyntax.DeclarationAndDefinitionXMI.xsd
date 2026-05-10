@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns:ASTMSemantics="ASTMSemantics" xmlns:ASTMSyntax="ASTMSyntax" xmlns:DeclarationAndDefinition="DeclarationAndDefinition" xmlns:Expression="Expression" xmlns:Statement="Statement" xmlns:Types="Types" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="DeclarationAndDefinition">
+  <xsd:import namespace="ASTMSemantics" schemaLocation="ASTMCore.ASTMSemanticsXMI.xsd"/>
+  <xsd:import namespace="Statement" schemaLocation="ASTMCore.ASTMSyntax.StatementXMI.xsd"/>
+  <xsd:import namespace="Expression" schemaLocation="ASTMCore.ASTMSyntax.ExpressionXMI.xsd"/>
+  <xsd:import namespace="Types" schemaLocation="ASTMCore.ASTMSyntax.TypesXMI.xsd"/>
+  <xsd:import namespace="ASTMSyntax" schemaLocation="ASTMCore.ASTMSyntaxXMI.xsd"/>
+  <xsd:complexType name="AccessKind">
+    <xsd:complexContent>
+      <xsd:extension base="ASTMSyntax:MinorSyntaxObject"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="AccessKind" type="DeclarationAndDefinition:AccessKind"/>
+  <xsd:complexType name="AggregateTypeDeclaration">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:TypeDeclaration"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="AggregateTypeDeclaration" type="DeclarationAndDefinition:AggregateTypeDeclaration"/>
+  <xsd:complexType name="AggregateTypeDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:TypeDefinition">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="aggregateType" type="Types:AggregateType"/>
+        </xsd:choice>
+        <xsd:attribute name="aggregateType" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="AggregateTypeDefinition" type="DeclarationAndDefinition:AggregateTypeDefinition"/>
+  <xsd:complexType name="BitFieldDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:DataDefinition">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="bitFieldSize" type="Expression:Expression"/>
+        </xsd:choice>
+        <xsd:attribute name="bitFieldSize" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="BitFieldDefinition" type="DeclarationAndDefinition:BitFieldDefinition"/>
+  <xsd:complexType abstract="true" name="DataDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:Definition">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="initialValue" type="Expression:Expression"/>
+        </xsd:choice>
+        <xsd:attribute name="isMutable" type="xsd:boolean" use="required"/>
+        <xsd:attribute name="initialValue" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="DataDefinition" type="DeclarationAndDefinition:DataDefinition"/>
+  <xsd:complexType abstract="true" name="Declaration">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:DeclarationOrDefinition">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="identifierName" type="DeclarationAndDefinition:Name"/>
+          <xsd:element name="declarationType" type="Types:TypeReference"/>
+          <xsd:element name="defRef" type="DeclarationAndDefinition:Definition"/>
+        </xsd:choice>
+        <xsd:attribute name="identifierName" type="xsd:string"/>
+        <xsd:attribute name="declarationType" type="xsd:string"/>
+        <xsd:attribute name="defRef" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Declaration" type="DeclarationAndDefinition:Declaration"/>
+  <xsd:complexType abstract="true" name="DeclarationOrDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:DefintionObject">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="accessKind" type="DeclarationAndDefinition:AccessKind"/>
+          <xsd:element name="storageSpecifier" type="DeclarationAndDefinition:StorageSpecification"/>
+        </xsd:choice>
+        <xsd:attribute name="linkageSpecifier" type="xsd:string" use="required"/>
+        <xsd:attribute name="accessKind" type="xsd:string"/>
+        <xsd:attribute name="storageSpecifier" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="DeclarationOrDefinition" type="DeclarationAndDefinition:DeclarationOrDefinition"/>
+  <xsd:complexType abstract="true" name="Definition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:DeclarationOrDefinition">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="identifierName" type="DeclarationAndDefinition:Name"/>
+          <xsd:element name="definitionType" type="Types:TypeReference"/>
+          <xsd:element name="ofDeclaration" type="DeclarationAndDefinition:Declaration"/>
+        </xsd:choice>
+        <xsd:attribute name="identifierName" type="xsd:string"/>
+        <xsd:attribute name="definitionType" type="xsd:string"/>
+        <xsd:attribute name="ofDeclaration" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Definition" type="DeclarationAndDefinition:Definition"/>
+  <xsd:complexType abstract="true" name="DefintionObject">
+    <xsd:complexContent>
+      <xsd:extension base="ASTMSyntax:GASTMSyntaxObject"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="DefintionObject" type="DeclarationAndDefinition:DefintionObject"/>
+  <xsd:complexType name="EntryDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:Definition">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="formalParameters" type="DeclarationAndDefinition:FormalParameterDefinition"/>
+          <xsd:element name="body" type="Statement:Statement"/>
+        </xsd:choice>
+        <xsd:attribute name="formalParameters" type="xsd:string"/>
+        <xsd:attribute name="body" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="EntryDefinition" type="DeclarationAndDefinition:EntryDefinition"/>
+  <xsd:complexType name="EnumLiteralDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:Definition">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="value" type="Expression:Expression"/>
+        </xsd:choice>
+        <xsd:attribute name="value" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="EnumLiteralDefinition" type="DeclarationAndDefinition:EnumLiteralDefinition"/>
+  <xsd:complexType name="EnumTypeDeclaration">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:TypeDeclaration"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="EnumTypeDeclaration" type="DeclarationAndDefinition:EnumTypeDeclaration"/>
+  <xsd:complexType name="EnumTypeDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:TypeDefinition">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="definitionType" type="Types:EnumType"/>
+        </xsd:choice>
+        <xsd:attribute name="definitionType" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="EnumTypeDefinition" type="DeclarationAndDefinition:EnumTypeDefinition"/>
+  <xsd:complexType name="External">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:StorageSpecification"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="External" type="DeclarationAndDefinition:External"/>
+  <xsd:complexType name="FileLocal">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:StorageSpecification"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="FileLocal" type="DeclarationAndDefinition:FileLocal"/>
+  <xsd:complexType name="FormalParameterDeclaration">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:Declaration"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="FormalParameterDeclaration" type="DeclarationAndDefinition:FormalParameterDeclaration"/>
+  <xsd:complexType name="FormalParameterDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:DataDefinition"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="FormalParameterDefinition" type="DeclarationAndDefinition:FormalParameterDefinition"/>
+  <xsd:complexType name="FunctionDeclaration">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:Declaration">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="formalParameters" type="DeclarationAndDefinition:FormalParameterDeclaration"/>
+          <xsd:element name="functionMemberAttributes" type="DeclarationAndDefinition:FunctionMemberAttributes"/>
+        </xsd:choice>
+        <xsd:attribute name="formalParameters" type="xsd:string"/>
+        <xsd:attribute name="functionMemberAttributes" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="FunctionDeclaration" type="DeclarationAndDefinition:FunctionDeclaration"/>
+  <xsd:complexType name="FunctionDefintion">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:Definition">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="returnType" type="Types:TypeReference"/>
+          <xsd:element name="formalParameters" type="DeclarationAndDefinition:FormalParameterDefinition"/>
+          <xsd:element name="functionMemberAttributes" type="DeclarationAndDefinition:FunctionMemberAttributes"/>
+          <xsd:element name="opensScope" type="ASTMSemantics:FunctionScope"/>
+          <xsd:element name="body" type="Statement:Statement"/>
+        </xsd:choice>
+        <xsd:attribute name="returnType" type="xsd:string"/>
+        <xsd:attribute name="formalParameters" type="xsd:string"/>
+        <xsd:attribute name="functionMemberAttributes" type="xsd:string"/>
+        <xsd:attribute name="opensScope" type="xsd:string"/>
+        <xsd:attribute name="body" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="FunctionDefintion" type="DeclarationAndDefinition:FunctionDefintion"/>
+  <xsd:complexType name="FunctionMemberAttributes">
+    <xsd:complexContent>
+      <xsd:extension base="ASTMSyntax:MinorSyntaxObject">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="virtualSpecifier" type="DeclarationAndDefinition:VirtualSpecification"/>
+        </xsd:choice>
+        <xsd:attribute name="isFriend" type="xsd:boolean" use="required"/>
+        <xsd:attribute name="isInline" type="xsd:boolean" use="required"/>
+        <xsd:attribute name="isThisConst" type="xsd:boolean" use="required"/>
+        <xsd:attribute name="virtualSpecifier" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="FunctionMemberAttributes" type="DeclarationAndDefinition:FunctionMemberAttributes"/>
+  <xsd:complexType name="FunctionPersistent">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:StorageSpecification"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="FunctionPersistent" type="DeclarationAndDefinition:FunctionPersistent"/>
+  <xsd:complexType name="LabelDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:DefintionObject">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="labelname" type="DeclarationAndDefinition:Name"/>
+          <xsd:element name="labelType" type="Types:LabelType"/>
+        </xsd:choice>
+        <xsd:attribute name="labelname" type="xsd:string"/>
+        <xsd:attribute name="labelType" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="LabelDefinition" type="DeclarationAndDefinition:LabelDefinition"/>
+  <xsd:complexType name="Name">
+    <xsd:complexContent>
+      <xsd:extension base="ASTMSyntax:MinorSyntaxObject">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="ofTypeReference" type="DeclarationAndDefinition:Name"/>
+        </xsd:choice>
+        <xsd:attribute name="nameString" type="xsd:string" use="required"/>
+        <xsd:attribute name="ofTypeReference" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Name" type="DeclarationAndDefinition:Name"/>
+  <xsd:complexType name="NameSpaceDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:DefintionObject">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="nameSpace" type="DeclarationAndDefinition:Name"/>
+          <xsd:element name="body" type="DeclarationAndDefinition:DefintionObject"/>
+          <xsd:element name="nameSpaceType" type="Types:NameSpaceType"/>
+        </xsd:choice>
+        <xsd:attribute name="nameSpace" type="xsd:string"/>
+        <xsd:attribute name="body" type="xsd:string"/>
+        <xsd:attribute name="nameSpaceType" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="NameSpaceDefinition" type="DeclarationAndDefinition:NameSpaceDefinition"/>
+  <xsd:complexType name="NamedTypeDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:TypeDefinition">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="definitionType" type="Types:NamedType"/>
+        </xsd:choice>
+        <xsd:attribute name="definitionType" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="NamedTypeDefinition" type="DeclarationAndDefinition:NamedTypeDefinition"/>
+  <xsd:complexType name="Nodef">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:StorageSpecification"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Nodef" type="DeclarationAndDefinition:Nodef"/>
+  <xsd:complexType name="PerClassMember">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:StorageSpecification"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="PerClassMember" type="DeclarationAndDefinition:PerClassMember"/>
+  <xsd:complexType name="Private">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:AccessKind"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Private" type="DeclarationAndDefinition:Private"/>
+  <xsd:complexType name="Protected">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:AccessKind"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Protected" type="DeclarationAndDefinition:Protected"/>
+  <xsd:complexType name="Public">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:AccessKind"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Public" type="DeclarationAndDefinition:Public"/>
+  <xsd:complexType abstract="true" name="StorageSpecification">
+    <xsd:complexContent>
+      <xsd:extension base="ASTMSyntax:MinorSyntaxObject"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="StorageSpecification" type="DeclarationAndDefinition:StorageSpecification"/>
+  <xsd:complexType abstract="true" name="TypeDeclaration">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:DefintionObject">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="typeReference" type="Types:TypeReference"/>
+        </xsd:choice>
+        <xsd:attribute name="typeReference" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="TypeDeclaration" type="DeclarationAndDefinition:TypeDeclaration"/>
+  <xsd:complexType name="TypeDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:DefintionObject">
+        <xsd:choice maxOccurs="unbounded" minOccurs="0">
+          <xsd:element name="typeName" type="DeclarationAndDefinition:Name"/>
+        </xsd:choice>
+        <xsd:attribute name="typeName" type="xsd:string"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="TypeDefinition" type="DeclarationAndDefinition:TypeDefinition"/>
+  <xsd:complexType name="VariableDeclaration">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:Declaration">
+        <xsd:attribute name="isMutable" type="xsd:boolean" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="VariableDeclaration" type="DeclarationAndDefinition:VariableDeclaration"/>
+  <xsd:complexType name="VariableDefinition">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:DataDefinition"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="VariableDefinition" type="DeclarationAndDefinition:VariableDefinition"/>
+  <xsd:complexType name="Virtual">
+    <xsd:complexContent>
+      <xsd:extension base="DeclarationAndDefinition:VirtualSpecification"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="Virtual" type="DeclarationAndDefinition:Virtual"/>
+  <xsd:complexType abstract="true" name="VirtualSpecification">
+    <xsd:complexContent>
+      <xsd:extension base="ASTMSyntax:MinorSyntaxObject"/>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="VirtualSpecification" type="DeclarationAndDefinition:VirtualSpecification"/>
+</xsd:schema>

@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="Expression" xmlns:null_1="ASTMSyntax" xmlns:null_2="Types" xmlns:null_3="DeclarationAndDefinition" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="Expression">
+<xsd:import namespace="DeclarationAndDefinition" schemaLocation="DeclarationAndDefinition.xsd"/>
+<xsd:import namespace="Types" schemaLocation="Types.xsd"/>
+<xsd:import namespace="ASTMSyntax" schemaLocation="ASTMSyntax.xsd"/>
+<xsd:import namespace="http://www.omg.org/XMI" schemaLocation="XMI.xsd"/>
+<xsd:complexType name="ActualParameter">
+<xsd:complexContent>
+<xsd:extension base="null_1:MinorSyntaxObjects"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ActualParameter" type="ActualParameter"/>
+<xsd:complexType name="ActualParameterExpression">
+<xsd:complexContent>
+<xsd:extension base="ActualParameter">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="value" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="value" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ActualParameterExpression" type="ActualParameterExpression"/>
+<xsd:complexType name="Add">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Add" type="Add"/>
+<xsd:complexType name="AddressOf">
+<xsd:complexContent>
+<xsd:extension base="UnaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="AddressOf" type="AddressOf"/>
+<xsd:complexType name="AggregateExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="AggregateExpression" type="AggregateExpression"/>
+<xsd:complexType name="And">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="And" type="And"/>
+<xsd:complexType name="AnnotationExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="annotationType" type="null_2:TypeReference"/>
+<xsd:element name="memberValues" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="annotationType" type="xsd:string"/>
+<xsd:attribute name="memberValues" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="AnnotationExpression" type="AnnotationExpression"/>
+<xsd:complexType name="ArrayAccess">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="arrayName" type="Expression"/>
+<xsd:element name="subScripts" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="arrayName" type="xsd:string"/>
+<xsd:attribute name="subScripts" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ArrayAccess" type="ArrayAccess"/>
+<xsd:complexType name="Assign">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Assign" type="Assign"/>
+<xsd:complexType name="BinaryExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="operator" type="BinaryOperator"/>
+<xsd:element name="leftOperand" type="Expression"/>
+<xsd:element name="rightOperand" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="operator" type="xsd:string"/>
+<xsd:attribute name="leftOperand" type="xsd:string"/>
+<xsd:attribute name="rightOperand" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BinaryExpression" type="BinaryExpression"/>
+<xsd:complexType name="BinaryOperator">
+<xsd:complexContent>
+<xsd:extension base="null_1:MinorSyntaxObjects"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BinaryOperator" type="BinaryOperator"/>
+<xsd:complexType name="BitAnd">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BitAnd" type="BitAnd"/>
+<xsd:complexType name="BitLeftShift">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BitLeftShift" type="BitLeftShift"/>
+<xsd:complexType name="BitLiteral">
+<xsd:complexContent>
+<xsd:extension base="Literal"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BitLiteral" type="BitLiteral"/>
+<xsd:complexType name="BitNot">
+<xsd:complexContent>
+<xsd:extension base="UnaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BitNot" type="BitNot"/>
+<xsd:complexType name="BitOr">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BitOr" type="BitOr"/>
+<xsd:complexType name="BitRightShift">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BitRightShift" type="BitRightShift"/>
+<xsd:complexType name="BitXor">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BitXor" type="BitXor"/>
+<xsd:complexType name="BooleanLiteral">
+<xsd:complexContent>
+<xsd:extension base="Literal"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BooleanLiteral" type="BooleanLiteral"/>
+<xsd:complexType name="ByReferenceActualParameterExpression">
+<xsd:complexContent>
+<xsd:extension base="ActualParameterExpression"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ByReferenceActualParameterExpression" type="ByReferenceActualParameterExpression"/>
+<xsd:complexType name="ByValueActualParameterExpression">
+<xsd:complexContent>
+<xsd:extension base="ActualParameterExpression"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ByValueActualParameterExpression" type="ByValueActualParameterExpression"/>
+<xsd:complexType name="CastExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="castType" type="null_2:TypeReference"/>
+<xsd:element name="expression" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="castType" type="xsd:string"/>
+<xsd:attribute name="expression" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="CastExpression" type="CastExpression"/>
+<xsd:complexType name="CharLiteral">
+<xsd:complexContent>
+<xsd:extension base="Literal"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="CharLiteral" type="CharLiteral"/>
+<xsd:complexType name="ConditionalExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="condition" type="Expression"/>
+<xsd:element name="onTrueOperand" type="Expression"/>
+<xsd:element name="onFalseOperand" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="condition" type="xsd:string"/>
+<xsd:attribute name="onTrueOperand" type="xsd:string"/>
+<xsd:attribute name="onFalseOperand" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ConditionalExpression" type="ConditionalExpression"/>
+<xsd:complexType name="Decrement">
+<xsd:complexContent>
+<xsd:extension base="UnaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Decrement" type="Decrement"/>
+<xsd:complexType name="Deref">
+<xsd:complexContent>
+<xsd:extension base="UnaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Deref" type="Deref"/>
+<xsd:complexType name="Divide">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Divide" type="Divide"/>
+<xsd:complexType name="Equal">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Equal" type="Equal"/>
+<xsd:complexType name="Exponent">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Exponent" type="Exponent"/>
+<xsd:complexType name="Expression">
+<xsd:complexContent>
+<xsd:extension base="null_1:GASTMSyntaxObject">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="expressionType" type="null_2:TypeReference"/>
+</xsd:choice>
+<xsd:attribute name="expressionType" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Expression" type="Expression"/>
+<xsd:complexType name="FunctionCallExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="calledFunction" type="Expression"/>
+<xsd:element name="actualParams" type="ActualParameter"/>
+</xsd:choice>
+<xsd:attribute name="calledFunction" type="xsd:string"/>
+<xsd:attribute name="actualParams" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="FunctionCallExpression" type="FunctionCallExpression"/>
+<xsd:complexType name="Greater">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Greater" type="Greater"/>
+<xsd:complexType name="IdentifierReference">
+<xsd:complexContent>
+<xsd:extension base="NameReference"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="IdentifierReference" type="IdentifierReference"/>
+<xsd:complexType name="Increment">
+<xsd:complexContent>
+<xsd:extension base="UnaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Increment" type="Increment"/>
+<xsd:complexType name="IntegerLiteral">
+<xsd:complexContent>
+<xsd:extension base="Literal"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="IntegerLiteral" type="IntegerLiteral"/>
+<xsd:complexType name="LabelAccess">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="labelName" type="null_3:Name"/>
+<xsd:element name="labelDefinition" type="null_3:LabelDefinition"/>
+</xsd:choice>
+<xsd:attribute name="labelName" type="xsd:string"/>
+<xsd:attribute name="labelDefinition" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="LabelAccess" type="LabelAccess"/>
+<xsd:complexType name="Less">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Less" type="Less"/>
+<xsd:complexType name="Literal">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:attribute name="value" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Literal" type="Literal"/>
+<xsd:complexType name="MissingActualParameter">
+<xsd:complexContent>
+<xsd:extension base="ActualParameter"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="MissingActualParameter" type="MissingActualParameter"/>
+<xsd:complexType name="Modulus">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Modulus" type="Modulus"/>
+<xsd:complexType name="Multiply">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Multiply" type="Multiply"/>
+<xsd:complexType name="NameReference">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="identifierName" type="null_3:Name"/>
+<xsd:element name="refersTo" type="null_3:DefinitionObject"/>
+</xsd:choice>
+<xsd:attribute name="identifierName" type="xsd:string"/>
+<xsd:attribute name="refersTo" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="NameReference" type="NameReference"/>
+<xsd:complexType name="UnaryMinus">
+<xsd:complexContent>
+<xsd:extension base="UnaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="UnaryMinus" type="UnaryMinus"/>
+<xsd:complexType name="NewExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="newType" type="null_2:TypeReference"/>
+<xsd:element name="actualParams" type="ActualParameter"/>
+</xsd:choice>
+<xsd:attribute name="newType" type="xsd:string"/>
+<xsd:attribute name="actualParams" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="NewExpression" type="NewExpression"/>
+<xsd:complexType name="CollectionExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="expressionList" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="expressionList" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="CollectionExpression" type="CollectionExpression"/>
+<xsd:complexType name="Not">
+<xsd:complexContent>
+<xsd:extension base="UnaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Not" type="Not"/>
+<xsd:complexType name="NotEqual">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="NotEqual" type="NotEqual"/>
+<xsd:complexType name="NotGreater">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="NotGreater" type="NotGreater"/>
+<xsd:complexType name="NotLess">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="NotLess" type="NotLess"/>
+<xsd:complexType name="OperatorAssign">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="operator" type="BinaryOperator"/>
+</xsd:choice>
+<xsd:attribute name="operator" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="OperatorAssign" type="OperatorAssign"/>
+<xsd:complexType name="Or">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Or" type="Or"/>
+<xsd:complexType name="PostDecrement">
+<xsd:complexContent>
+<xsd:extension base="UnaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="PostDecrement" type="PostDecrement"/>
+<xsd:complexType name="PostIncrement">
+<xsd:complexContent>
+<xsd:extension base="UnaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="PostIncrement" type="PostIncrement"/>
+<xsd:complexType name="QualifiedIdentifierReference">
+<xsd:complexContent>
+<xsd:extension base="NameReference">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="qualifiers" type="Expression"/>
+<xsd:element name="member" type="IdentifierReference"/>
+</xsd:choice>
+<xsd:attribute name="qualifiers" type="xsd:string"/>
+<xsd:attribute name="member" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="QualifiedIdentifierReference" type="QualifiedIdentifierReference"/>
+<xsd:complexType name="QualifiedOverData">
+<xsd:complexContent>
+<xsd:extension base="QualifiedIdentifierReference"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="QualifiedOverData" type="QualifiedOverData"/>
+<xsd:complexType name="QualifiedOverPointer">
+<xsd:complexContent>
+<xsd:extension base="QualifiedIdentifierReference"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="QualifiedOverPointer" type="QualifiedOverPointer"/>
+<xsd:complexType name="RDBColumnReference">
+<xsd:complexContent>
+<xsd:extension base="IdentifierReference">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="table" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="table" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBColumnReference" type="RDBColumnReference"/>
+<xsd:complexType name="RDBHostVariableReference">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="baseVariable" type="Expression"/>
+<xsd:element name="indicator" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="baseVariable" type="xsd:string"/>
+<xsd:attribute name="indicator" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBHostVariableReference" type="RDBHostVariableReference"/>
+<xsd:complexType name="RDBSelectExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="column" type="RDBColumnReference"/>
+<xsd:element name="table" type="RDBTableReference"/>
+<xsd:element name="where" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="column" type="xsd:string"/>
+<xsd:attribute name="table" type="xsd:string"/>
+<xsd:attribute name="where" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBSelectExpression" type="RDBSelectExpression"/>
+<xsd:complexType name="RDBTableAlias">
+<xsd:complexContent>
+<xsd:extension base="IdentifierReference"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBTableAlias" type="RDBTableAlias"/>
+<xsd:complexType name="RDBTableReference">
+<xsd:complexContent>
+<xsd:extension base="IdentifierReference">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="alias" type="RDBTableAlias"/>
+</xsd:choice>
+<xsd:attribute name="alias" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBTableReference" type="RDBTableReference"/>
+<xsd:complexType name="RDBTableSpaceReference">
+<xsd:complexContent>
+<xsd:extension base="IdentifierReference"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBTableSpaceReference" type="RDBTableSpaceReference"/>
+<xsd:complexType name="RangeExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="fromExpression" type="Expression"/>
+<xsd:element name="toExpression" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="fromExpression" type="xsd:string"/>
+<xsd:attribute name="toExpression" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RangeExpression" type="RangeExpression"/>
+<xsd:complexType name="RealLiteral">
+<xsd:complexContent>
+<xsd:extension base="Literal"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RealLiteral" type="RealLiteral"/>
+<xsd:complexType name="EnumLiteral">
+<xsd:complexContent>
+<xsd:extension base="Literal"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="EnumLiteral" type="EnumLiteral"/>
+
+<xsd:complexType name="StringLiteral">
+<xsd:complexContent>
+<xsd:extension base="Literal"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="StringLiteral" type="StringLiteral"/>
+<xsd:complexType name="Subtract">
+<xsd:complexContent>
+<xsd:extension base="BinaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Subtract" type="Subtract"/>
+<xsd:complexType name="TypeQualifiedIdentifierReference">
+<xsd:complexContent>
+<xsd:extension base="NameReference">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="aggregateType" type="null_2:TypeReference"/>
+<xsd:element name="member" type="IdentifierReference"/>
+</xsd:choice>
+<xsd:attribute name="aggregateType" type="xsd:string"/>
+<xsd:attribute name="member" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="TypeQualifiedIdentifierReference" type="TypeQualifiedIdentifierReference"/>
+<xsd:complexType name="UnaryExpression">
+<xsd:complexContent>
+<xsd:extension base="Expression">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="operator" type="UnaryOperator"/>
+<xsd:element name="operand" type="Expression"/>
+</xsd:choice>
+<xsd:attribute name="operator" type="xsd:string"/>
+<xsd:attribute name="operand" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="UnaryExpression" type="UnaryExpression"/>
+<xsd:complexType name="UnaryOperator">
+<xsd:complexContent>
+<xsd:extension base="null_1:MinorSyntaxObjects"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="UnaryOperator" type="UnaryOperator"/>
+<xsd:complexType name="UnaryPlus">
+<xsd:complexContent>
+<xsd:extension base="UnaryOperator"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="UnaryPlus" type="UnaryPlus"/>
+</xsd:schema>

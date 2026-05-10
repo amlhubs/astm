@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="Types" xmlns:null_1="DeclarationAndDefinition" xmlns:null_2="ASTMSemantics" xmlns:null_3="ASTMSyntax" xmlns:null_4="Expression" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="Types">
+<xsd:import namespace="Expression" schemaLocation="Expression.xsd"/>
+<xsd:import namespace="ASTMSyntax" schemaLocation="ASTMSyntax.xsd"/>
+<xsd:import namespace="ASTMSemantics" schemaLocation="ASTMSemantics.xsd"/>
+<xsd:import namespace="DeclarationAndDefinition" schemaLocation="DeclarationAndDefinition.xsd"/>
+<xsd:import namespace="http://www.omg.org/XMI" schemaLocation="XMI.xsd"/>
+<xsd:complexType name="AggregateType">
+<xsd:complexContent>
+<xsd:extension base="DataType">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="members" type="null_1:MemberObject"/>
+<xsd:element name="opensScope" type="null_2:AggregateScope"/>
+</xsd:choice>
+<xsd:attribute name="members" type="xsd:string"/>
+<xsd:attribute name="opensScope" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="AggregateType" type="AggregateType"/>
+<xsd:complexType name="MemberObject">
+<xsd:complexContent>
+<xsd:extension base="null_3:MinorSyntaxObjects">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="member" type="null_1:DefinitionObject"/>
+</xsd:choice>
+<xsd:attribute name="member" type="xsd:string"/>
+<xsd:attribute name="offset" type="xsd:integer"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="AggregateType" type="AggregateType"/>
+
+<xsd:complexType name="AnnotationType">
+<xsd:complexContent>
+<xsd:extension base="AggregateType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="AnnotationType" type="AnnotationType"/>
+<xsd:complexType name="ArrayType">
+<xsd:complexContent>
+<xsd:extension base="ConstructedType">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="ranks" type="Dimension"/>
+</xsd:choice>
+<xsd:attribute name="ranks" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ArrayType" type="ArrayType"/>
+<xsd:complexType name="Boolean">
+<xsd:complexContent>
+<xsd:extension base="PrimitiveType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Boolean" type="Boolean"/>
+<xsd:complexType name="ByReferenceFormalParameterType">
+<xsd:complexContent>
+<xsd:extension base="FormalParameterType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ByReferenceFormalParameterType" type="ByReferenceFormalParameterType"/>
+<xsd:complexType name="ByValueFormalParameterType">
+<xsd:complexContent>
+<xsd:extension base="FormalParameterType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ByValueFormalParameterType" type="ByValueFormalParameterType"/>
+<xsd:complexType name="Byte">
+<xsd:complexContent>
+<xsd:extension base="NumberType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Byte" type="Byte"/>
+<xsd:complexType name="IntegralType">
+<xsd:complexContent>
+<xsd:extension base="NumberType">
+<xsd:attribute name="size" type="xsd:integer"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="IntegralType" type="IntegralType"/>
+<xsd:complexType name="RealType">
+<xsd:complexContent>
+<xsd:extension base="NumberType">
+<xsd:attribute name="precision" type="xsd:integer"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RealType" type="RealType"/>
+<xsd:complexType name="Character">
+<xsd:complexContent>
+<xsd:extension base="NumberType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Character" type="Character"/>
+<xsd:complexType name="ClassType">
+<xsd:complexContent>
+<xsd:extension base="AggregateType">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="derivesFrom" type="DerivesFrom"/>
+</xsd:choice>
+<xsd:attribute name="derivesFrom" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ClassType" type="ClassType"/>
+<xsd:complexType name="CollectionType">
+<xsd:complexContent>
+<xsd:extension base="ConstructedType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="CollectionType" type="CollectionType"/>
+<xsd:complexType name="ConstructedType">
+<xsd:complexContent>
+<xsd:extension base="DataType">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="baseType" type="TypeReference"/>
+</xsd:choice>
+<xsd:attribute name="baseType" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ConstructedType" type="ConstructedType"/>
+<xsd:complexType name="DataType">
+<xsd:complexContent>
+<xsd:extension base="Type"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="DataType" type="DataType"/>
+<xsd:complexType name="DerivesFrom">
+<xsd:complexContent>
+<xsd:extension base="null_3:MinorSyntaxObjects">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="accessKind" type="null_1:AccessKind"/>
+<xsd:element name="className" type="NamedTypeReference"/>
+<xsd:element name="virtualSpecifier" type="VirtualSpecification"/>
+</xsd:choice>
+<xsd:attribute name="virtualSpecifier" type="xsd:string"/>
+<xsd:attribute name="accessKind" type="xsd:string"/>
+<xsd:attribute name="className" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="DerivesFrom" type="DerivesFrom"/>
+<xsd:complexType name="Dimension">
+<xsd:complexContent>
+<xsd:extension base="null_3:MinorSyntaxObjects">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="lowBound" type="null_4:Expression"/>
+<xsd:element name="highBound" type="null_4:Expression"/>
+</xsd:choice>
+<xsd:attribute name="lowBound" type="xsd:string"/>
+<xsd:attribute name="highBound" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Dimension" type="Dimension"/>
+<xsd:complexType name="Double">
+<xsd:complexContent>
+<xsd:extension base="RealType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Double" type="Double"/>
+<xsd:complexType name="EnumType">
+<xsd:complexContent>
+<xsd:extension base="DataType">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="enumLiterals" type="null_1:EnumLiteralDefinition"/>
+</xsd:choice>
+<xsd:attribute name="enumLiterals" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="EnumType" type="EnumType"/>
+<xsd:complexType name="ExceptionType">
+<xsd:complexContent>
+<xsd:extension base="DataType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ExceptionType" type="ExceptionType"/>
+<xsd:complexType name="Real">
+<xsd:complexContent>
+<xsd:extension base="RealType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Real" type="Real"/>
+<xsd:complexType name="FormalParameterType">
+<xsd:complexContent>
+<xsd:extension base="DataType">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="type" type="TypeReference"/>
+</xsd:choice>
+<xsd:attribute name="type" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="FormalParameterType" type="FormalParameterType"/>
+<xsd:complexType name="FunctionType">
+<xsd:complexContent>
+<xsd:extension base="Type">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="returnType" type="TypeReference"/>
+<xsd:element name="parameterTypes" type="FormalParameterType"/>
+</xsd:choice>
+<xsd:attribute name="returnType" type="xsd:string"/>
+<xsd:attribute name="parameterTypes" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="FunctionType" type="FunctionType"/>
+<xsd:complexType name="Integer">
+<xsd:complexContent>
+<xsd:extension base="IntegralType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Integer" type="Integer"/>
+<xsd:complexType name="LabelType">
+<xsd:complexContent>
+<xsd:extension base="Type"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="LabelType" type="LabelType"/>
+<xsd:complexType name="LongDouble">
+<xsd:complexContent>
+<xsd:extension base="RealType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="LongDouble" type="LongDouble"/>
+<xsd:complexType name="LongInteger">
+<xsd:complexContent>
+<xsd:extension base="IntegralType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="LongInteger" type="LongInteger"/>
+<xsd:complexType name="NameSpaceType">
+<xsd:complexContent>
+<xsd:extension base="Type"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="NameSpaceType" type="NameSpaceType"/>
+<xsd:complexType name="NamedType">
+<xsd:complexContent>
+<xsd:extension base="DataType">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="body" type="Type"/>
+</xsd:choice>
+<xsd:attribute name="body" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="NamedType" type="NamedType"/>
+<xsd:complexType name="NamedTypeReference">
+<xsd:complexContent>
+<xsd:extension base="TypeReference">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="typeName" type="null_1:Name"/>
+<xsd:element name="type" type="null_1:TypeDefinition"/>
+</xsd:choice>
+<xsd:attribute name="typeName" type="xsd:string"/>
+<xsd:attribute name="type" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="NamedTypeReference" type="NamedTypeReference"/>
+<xsd:complexType name="PointerType">
+<xsd:complexContent>
+<xsd:extension base="ConstructedType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="PointerType" type="PointerType"/>
+<xsd:complexType name="PrimitiveType">
+<xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="PrimitiveType" type="PrimitiveType"/>
+<xsd:complexType name="RDBBlob">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBBlob" type="RDBBlob"/>
+<xsd:complexType name="RDBBoolean">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBBoolean" type="RDBBoolean"/>
+<xsd:complexType name="RDBChar">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBChar" type="RDBChar"/>
+<xsd:complexType name="RDBClob">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBClob" type="RDBClob"/>
+<xsd:complexType name="RDBColumnType">
+<xsd:complexContent>
+<xsd:extension base="DataType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBColumnType" type="RDBColumnType"/>
+<xsd:complexType name="RDBCursorType">
+<xsd:complexContent>
+<xsd:extension base="DataType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBCursorType" type="RDBCursorType"/>
+<xsd:complexType name="RDBDataBaseType">
+<xsd:complexContent>
+<xsd:extension base="DataType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBDataBaseType" type="RDBDataBaseType"/>
+<xsd:complexType name="RDBDate">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBDate" type="RDBDate"/>
+<xsd:complexType name="RDBDecimal">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBDecimal" type="RDBDecimal"/>
+<xsd:complexType name="RDBFile">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBFile" type="RDBFile"/>
+<xsd:complexType name="RDBFloat">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBFloat" type="RDBFloat"/>
+<xsd:complexType name="RDBInt">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBInt" type="RDBInt"/>
+<xsd:complexType name="RDBInteger">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBInteger" type="RDBInteger"/>
+<xsd:complexType name="RDBLong">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBLong" type="RDBLong"/>
+<xsd:complexType name="RDBNClob">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBNClob" type="RDBNClob"/>
+<xsd:complexType name="RDBNumber">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBNumber" type="RDBNumber"/>
+<xsd:complexType name="RDBRaw">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBRaw" type="RDBRaw"/>
+<xsd:complexType name="RDBReal">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBReal" type="RDBReal"/>
+<xsd:complexType name="RDBRowid">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBRowid" type="RDBRowid"/>
+<xsd:complexType name="RDBString">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBString" type="RDBString"/>
+<xsd:complexType name="RDBTableSpaceType">
+<xsd:complexContent>
+<xsd:extension base="DataType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBTableSpaceType" type="RDBTableSpaceType"/>
+<xsd:complexType name="RDBTableType">
+<xsd:complexContent>
+<xsd:extension base="DataType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="PrimitiveType" type="PrimitiveType"/>
+<xsd:element name="RDBTableType" type="RDBTableType"/>
+<xsd:complexType name="RDBTimeStamp">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBTimeStamp" type="RDBTimeStamp"/>
+<xsd:complexType name="RDBUserType">
+<xsd:complexContent>
+<xsd:extension base="DataType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBUserType" type="RDBUserType"/>
+<xsd:complexType name="RDBVarChar">
+<xsd:complexContent>
+<xsd:extension base="RDBColumnType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBVarChar" type="RDBVarChar"/>
+<xsd:complexType name="RDBViewType">
+<xsd:complexContent>
+<xsd:extension base="DataType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBViewType" type="RDBViewType"/>
+<xsd:complexType name="RangeType">
+<xsd:complexContent>
+<xsd:extension base="ConstructedType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RangeType" type="RangeType"/>
+<xsd:complexType name="ReferenceType">
+<xsd:complexContent>
+<xsd:extension base="ConstructedType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ReferenceType" type="ReferenceType"/>
+<xsd:complexType name="ShortInteger">
+<xsd:complexContent>
+<xsd:extension base="IntegralType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ShortInteger" type="ShortInteger"/>
+<xsd:complexType name="StructureType">
+<xsd:complexContent>
+<xsd:extension base="AggregateType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="StructureType" type="StructureType"/>
+<xsd:complexType name="Type">
+<xsd:complexContent>
+<xsd:extension base="null_3:GASTMSyntaxObject">
+<xsd:attribute name="isConst" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Type" type="Type"/>
+<xsd:complexType name="TypeReference">
+<xsd:complexContent>
+<xsd:extension base="Type"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="TypeReference" type="TypeReference"/>
+<xsd:complexType name="UnionType">
+<xsd:complexContent>
+<xsd:extension base="AggregateType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="UnionType" type="UnionType"/>
+<xsd:complexType name="UnnamedTypeReference">
+<xsd:complexContent>
+<xsd:extension base="TypeReference">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="type" type="Type"/>
+</xsd:choice>
+<xsd:attribute name="type" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="UnnamedTypeReference" type="UnnamedTypeReference"/>
+<xsd:complexType name="Void">
+<xsd:complexContent>
+<xsd:extension base="PrimitiveType"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Void" type="Void"/>
+<xsd:complexType name="NumberType">
+<xsd:complexContent>
+<xsd:extension base="PrimitiveType">
+<xsd:attribute name="isSigned" type="xsd:boolean"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="NumberType" type="NumberType"/>
+</xsd:schema>

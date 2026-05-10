@@ -1,0 +1,388 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="Statement" xmlns:null_1="ASTMSemantics" xmlns:null_2="Expression" xmlns:null_3="ASTMSyntax" xmlns:null_4="DeclarationAndDefinition" xmlns:null_5="Types" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="Statement">
+<xsd:import namespace="Types" schemaLocation="Types.xsd"/>
+<xsd:import namespace="DeclarationAndDefinition" schemaLocation="DeclarationAndDefinition.xsd"/>
+<xsd:import namespace="ASTMSyntax" schemaLocation="ASTMSyntax.xsd"/>
+<xsd:import namespace="Expression" schemaLocation="Expression.xsd"/>
+<xsd:import namespace="ASTMSemantics" schemaLocation="ASTMSemantics.xsd"/>
+<xsd:import namespace="http://www.omg.org/XMI" schemaLocation="XMI.xsd"/>
+<xsd:complexType name="BlockStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="subStatements" type="Statement"/>
+<xsd:element name="opensScope" type="null_1:BlockScope"/>
+</xsd:choice>
+<xsd:attribute name="subStatements" type="xsd:string"/>
+<xsd:attribute name="opensScope" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BlockStatement" type="BlockStatement"/>
+<xsd:complexType name="BreakStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="target" type="null_2:LabelAccess"/>
+</xsd:choice>
+<xsd:attribute name="target" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="BreakStatement" type="BreakStatement"/>
+<xsd:complexType name="CaseBlock">
+<xsd:complexContent>
+<xsd:extension base="SwitchCase">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="caseExpression" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="caseExpression" type="xsd:string"/>
+<xsd:attribute name="isEvaluateAllCases" type="xsd:boolean"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="CaseBlock" type="CaseBlock"/>
+<xsd:complexType name="CatchBlock">
+<xsd:complexContent>
+<xsd:extension base="null_3:MinorSyntaxObjects">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="body" type="Statement"/>
+</xsd:choice>
+<xsd:attribute name="body" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="CatchBlock" type="CatchBlock"/>
+<xsd:complexType name="ContinueStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="target" type="null_2:LabelAccess"/>
+</xsd:choice>
+<xsd:attribute name="target" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ContinueStatement" type="ContinueStatement"/>
+<xsd:complexType name="DeclarationOrDefinitionStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="declOrDefn" type="null_4:DefinitionObject"/>
+</xsd:choice>
+<xsd:attribute name="declOrDefn" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="DeclarationOrDefinitionStatement" type="DeclarationOrDefinitionStatement"/>
+<xsd:complexType name="DefaultBlock">
+<xsd:complexContent>
+<xsd:extension base="SwitchCase"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="DefaultBlock" type="DefaultBlock"/>
+<xsd:complexType name="DoWhileStatement">
+<xsd:complexContent>
+<xsd:extension base="LoopStatement"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="DoWhileStatement" type="DoWhileStatement"/>
+<xsd:complexType name="EmptyStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="EmptyStatement" type="EmptyStatement"/>
+<xsd:complexType name="ExpressionStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="expression" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="expression" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ExpressionStatement" type="ExpressionStatement"/>
+<xsd:complexType name="ForCheckAfterStatement">
+<xsd:complexContent>
+<xsd:extension base="ForStatement"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ForCheckAfterStatement" type="ForCheckAfterStatement"/>
+<xsd:complexType name="ForCheckBeforeStatement">
+<xsd:complexContent>
+<xsd:extension base="ForStatement"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ForCheckBeforeStatement" type="ForCheckBeforeStatement"/>
+<xsd:complexType name="ForStatement">
+<xsd:complexContent>
+<xsd:extension base="LoopStatement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="initBody" type="null_2:Expression"/>
+<xsd:element name="iterationBody" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="initBody" type="xsd:string"/>
+<xsd:attribute name="iterationBody" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ForStatement" type="ForStatement"/>
+<xsd:complexType name="IfStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="condition" type="null_2:Expression"/>
+<xsd:element name="thenBody" type="Statement"/>
+<xsd:element name="elseBody" type="Statement"/>
+</xsd:choice>
+<xsd:attribute name="condition" type="xsd:string"/>
+<xsd:attribute name="thenBody" type="xsd:string"/>
+<xsd:attribute name="elseBody" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="IfStatement" type="IfStatement"/>
+<xsd:complexType name="JumpStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="target" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="target" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="JumpStatement" type="JumpStatement"/>
+<xsd:complexType name="LabeledStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="label" type="null_4:LabelDefinition"/>
+<xsd:element name="statement" type="Statement"/>
+</xsd:choice>
+<xsd:attribute name="label" type="xsd:string"/>
+<xsd:attribute name="statement" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="LabeledStatement" type="LabeledStatement"/>
+<xsd:complexType name="LoopStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="condition" type="null_2:Expression"/>
+<xsd:element name="body" type="Statement"/>
+</xsd:choice>
+<xsd:attribute name="condition" type="xsd:string"/>
+<xsd:attribute name="body" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="LoopStatement" type="LoopStatement"/>
+<xsd:complexType name="RDBCloseCursorStatement">
+<xsd:complexContent>
+<xsd:extension base="RDBCursorStatement"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBCloseCursorStatement" type="RDBCloseCursorStatement"/>
+<xsd:complexType name="RDBConnectStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="connectString" type="null_2:RDBHostVariableReference"/>
+</xsd:choice>
+<xsd:attribute name="connectString" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBConnectStatement" type="RDBConnectStatement"/>
+<xsd:complexType name="RDBCursorStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="cursor" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="cursor" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBCursorStatement" type="RDBCursorStatement"/>
+<xsd:complexType name="RDBDeleteStatement">
+<xsd:complexContent>
+<xsd:extension base="RDBModifyStatement"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBDeleteStatement" type="RDBDeleteStatement"/>
+<xsd:complexType name="RDBFetchCursorStatement">
+<xsd:complexContent>
+<xsd:extension base="RDBCursorStatement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="into" type="null_2:RDBHostVariableReference"/>
+</xsd:choice>
+<xsd:attribute name="into" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBFetchCursorStatement" type="RDBFetchCursorStatement"/>
+<xsd:complexType name="RDBInsertStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="columns" type="null_2:RDBColumnReference"/>
+<xsd:element name="intoTable" type="null_2:RDBTableReference"/>
+<xsd:element name="values" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="columns" type="xsd:string"/>
+<xsd:attribute name="intoTable" type="xsd:string"/>
+<xsd:attribute name="values" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBInsertStatement" type="RDBInsertStatement"/>
+<xsd:complexType name="RDBModifyStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="table" type="null_2:RDBTableReference"/>
+<xsd:element name="where" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="table" type="xsd:string"/>
+<xsd:attribute name="where" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBModifyStatement" type="RDBModifyStatement"/>
+<xsd:complexType name="RDBOpenCursorStatement">
+<xsd:complexContent>
+<xsd:extension base="RDBCursorStatement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="values" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="values" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBOpenCursorStatement" type="RDBOpenCursorStatement"/>
+<xsd:complexType name="RDBSelectStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="intoVariable" type="null_2:RDBHostVariableReference"/>
+<xsd:element name="selectExpression" type="null_2:RDBSelectExpression"/>
+</xsd:choice>
+<xsd:attribute name="intoVariable" type="xsd:string"/>
+<xsd:attribute name="selectExpression" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBSelectStatement" type="RDBSelectStatement"/>
+<xsd:complexType name="RDBUpdateStatement">
+<xsd:complexContent>
+<xsd:extension base="RDBModifyStatement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="values" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="values" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="RDBUpdateStatement" type="RDBUpdateStatement"/>
+<xsd:complexType name="ReturnStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="returnValue" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="returnValue" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ReturnStatement" type="ReturnStatement"/>
+<xsd:complexType name="Statement">
+<xsd:complexContent>
+<xsd:extension base="null_3:GASTMSyntaxObject"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="Statement" type="Statement"/>
+<xsd:complexType name="SwitchCase">
+<xsd:complexContent>
+<xsd:extension base="null_3:MinorSyntaxObjects">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="body" type="Statement"/>
+</xsd:choice>
+<xsd:attribute name="body" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="SwitchCase" type="SwitchCase"/>
+<xsd:complexType name="SwitchStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="switchExpression" type="null_2:Expression"/>
+<xsd:element name="cases" type="SwitchCase"/>
+</xsd:choice>
+<xsd:attribute name="switchExpression" type="xsd:string"/>
+<xsd:attribute name="cases" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="SwitchStatement" type="SwitchStatement"/>
+<xsd:complexType name="ThrowStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="exception" type="null_2:Expression"/>
+</xsd:choice>
+<xsd:attribute name="exception" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="ThrowStatement" type="ThrowStatement"/>
+<xsd:complexType name="TryStatement">
+<xsd:complexContent>
+<xsd:extension base="Statement">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="guardedStatement" type="Statement"/>
+<xsd:element name="catchBlocks" type="CatchBlock"/>
+<xsd:element name="finalStatement" type="Statement"/>
+</xsd:choice>
+<xsd:attribute name="guardedStatement" type="xsd:string"/>
+<xsd:attribute name="catchBlocks" type="xsd:string"/>
+<xsd:attribute name="finalStatement" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="TryStatement" type="TryStatement"/>
+<xsd:complexType name="TypesCatchBlock">
+<xsd:complexContent>
+<xsd:extension base="CatchBlock">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="exceptions" type="null_5:Type"/>
+</xsd:choice>
+<xsd:attribute name="exceptions" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="TypesCatchBlock" type="TypesCatchBlock"/>
+<xsd:complexType name="VariableCatchBlock">
+<xsd:complexContent>
+<xsd:extension base="CatchBlock">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="exceptionVariable" type="null_4:DataDefinition"/>
+</xsd:choice>
+<xsd:attribute name="exceptionVariable" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="VariableCatchBlock" type="VariableCatchBlock"/>
+<xsd:complexType name="WhileStatement">
+<xsd:complexContent>
+<xsd:extension base="LoopStatement"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="WhileStatement" type="WhileStatement"/>
+</xsd:schema>
+

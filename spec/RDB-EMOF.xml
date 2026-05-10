@@ -1,0 +1,1064 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<emof:Package xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:emof="http://schema.omg.org/spec/mof/2.0/emof.xmi" xmi:id="ASTMCore"
+    name="ASTMCore" uri="ASTMCore">
+  <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.GASTMObject" name="GASTMObject"/>
+  <nestedPackage xmi:id="ASTMCore.ASTMSemantics" name="ASTMSemantics" uri="ASTMSemantics">
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSemantics.AggregateScope"
+        name="AggregateScope" superClass="ASTMCore.ASTMSemantics.Scope"/>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSemantics.BlockScope" name="BlockScope"
+        superClass="ASTMCore.ASTMSemantics.Scope"/>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSemantics.FunctionScope"
+        name="FunctionScope" superClass="ASTMCore.ASTMSemantics.Scope">
+      <ownedAttribute xmi:id="ASTMCore.ASTMSemantics.FunctionScope.scopeOpenedBy"
+          name="scopeOpenedBy" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDefintion"
+          opposite="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDefintion.opensScope"/>
+    </ownedType>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSemantics.GASTMSemanticObject"
+        name="GASTMSemanticObject" isAbstract="true" superClass="ASTMCore.GASTMObject"/>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSemantics.GlobalScope" name="GlobalScope"
+        superClass="ASTMCore.ASTMSemantics.Scope"/>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSemantics.ProgramScope"
+        name="ProgramScope" superClass="ASTMCore.ASTMSemantics.Scope"/>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSemantics.Project" name="Project"
+        superClass="ASTMCore.ASTMSemantics.GASTMSemanticObject">
+      <ownedAttribute xmi:id="ASTMCore.ASTMSemantics.Project.files" name="files" lower="1"
+          upper="*" type="ASTMCore.ASTMSource.CompilationUnit"/>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSemantics.Project.outerScope" name="outerScope"
+          type="ASTMCore.ASTMSemantics.GlobalScope"/>
+    </ownedType>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSemantics.Scope" name="Scope"
+        superClass="ASTMCore.ASTMSemantics.GASTMSemanticObject">
+      <ownedAttribute xmi:id="ASTMCore.ASTMSemantics.Scope.declOrDefn" name="declOrDefn"
+          upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject"/>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSemantics.Scope.childScope" name="childScope"
+          upper="*" type="ASTMCore.ASTMSemantics.Scope"/>
+    </ownedType>
+     </nestedPackage>
+  <nestedPackage xmi:id="ASTMCore.ASTMSource" name="ASTMSource" uri="ASTMSource">
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSource.CompilationUnit"
+        name="CompilationUnit" superClass="ASTMCore.ASTMSource.SourceFile">
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.CompilationUnit.language" name="language">
+        <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.CompilationUnit.fragments" name="fragments"
+          upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject"/>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.CompilationUnit.opensScope" name="opensScope"
+          type="ASTMCore.ASTMSemantics.ProgramScope"/>
+    </ownedType>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSource.GASTMSourceObject"
+        name="GASTMSourceObject" isAbstract="true" superClass="ASTMCore.GASTMObject"/>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSource.SourceFile" name="SourceFile"
+        superClass="ASTMCore.ASTMSource.GASTMSourceObject">
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.SourceFile.path" name="path">
+        <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+      </ownedAttribute>
+    </ownedType>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSource.SourceFileReference"
+        name="SourceFileReference" superClass="ASTMCore.ASTMSource.SourceFile">
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.SourceFileReference.locationInfo"
+          name="locationInfo" lower="1" type="ASTMCore.ASTMSource.SourceLocation"/>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.SourceFileReference.ofSourceFile"
+          name="ofSourceFile" lower="1" type="ASTMCore.ASTMSource.SourceFile"/>
+    </ownedType>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSource.SourceLocation" name="SourceLocation"
+        superClass="ASTMCore.ASTMSource.GASTMSourceObject">
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.SourceLocation.startLine" name="startLine">
+        <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Integer"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.SourceLocation.startPosition" name="startPosition">
+        <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Integer"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.SourceLocation.endLine" name="endLine">
+        <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Integer"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.SourceLocation.endPosition" name="endPosition">
+        <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Integer"/>
+      </ownedAttribute>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSource.SourceLocation.inSourceFile" name="inSourceFile"
+          lower="1" type="ASTMCore.ASTMSource.SourceFile"/>
+    </ownedType>
+     </nestedPackage>
+  <nestedPackage xmi:id="ASTMCore.ASTMSyntax" name="ASTMSyntax" uri="ASTMSyntax">
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.GASTMSyntaxObject"
+        name="GASTMSyntaxObject" isAbstract="true" superClass="ASTMCore.GASTMObject">
+      <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.GASTMSyntaxObject.locationInfo"
+          name="locationInfo" lower="1" type="ASTMCore.ASTMSource.SourceLocation"/>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.GASTMSyntaxObject.annotations" name="annotations"
+          upper="*" type="ASTMCore.ASTMSyntax.Expression.AnnotationExpression"/>
+      <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.GASTMSyntaxObject.preProcessorElements"
+          name="preProcessorElements" upper="*" type="ASTMCore.ASTMSyntax.Directives.PreprocessorElement"/>
+    </ownedType>
+    <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.MinorSyntaxObject"
+        name="MinorSyntaxObject" isAbstract="true" superClass="ASTMCore.ASTMSyntax.GASTMSyntaxObject"/>
+    <nestedPackage xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition" name="DeclarationAndDefinition"
+        uri="DeclarationAndDefinition">
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.AccessKind"
+          name="AccessKind" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.AggregateTypeDeclaration"
+          name="AggregateTypeDeclaration" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDeclaration"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.AggregateTypeDefinition"
+          name="AggregateTypeDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDefinition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.AggregateTypeDefinition.aggregateType"
+            name="aggregateType" lower="1" type="ASTMCore.ASTMSyntax.Types.AggregateType"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.BitFieldDefinition"
+          name="BitFieldDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DataDefinition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.BitFieldDefinition.bitFieldSize"
+            name="bitFieldSize" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DataDefinition"
+          name="DataDefinition" isAbstract="true" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DataDefinition.isMutable"
+            name="isMutable">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DataDefinition.initialValue"
+            name="initialValue" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Declaration"
+          name="Declaration" isAbstract="true" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DeclarationOrDefinition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Declaration.identifierName"
+            name="identifierName" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Declaration.declarationType"
+            name="declarationType" lower="1" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Declaration.defRef"
+            name="defRef" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition"
+            opposite="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition.ofDeclaration"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DeclarationOrDefinition"
+          name="DeclarationOrDefinition" isAbstract="true" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DeclarationOrDefinition.linkageSpecifier"
+            name="linkageSpecifier">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DeclarationOrDefinition.accessKind"
+            name="accessKind" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.AccessKind"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DeclarationOrDefinition.storageSpecifier"
+            name="storageSpecifier" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.StorageSpecification"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition"
+          name="Definition" isAbstract="true" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DeclarationOrDefinition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition.identifierName"
+            name="identifierName" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition.definitionType"
+            name="definitionType" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition.ofDeclaration"
+            name="ofDeclaration" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Declaration"
+            opposite="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Declaration.defRef"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject"
+          name="DefintionObject" isAbstract="true" superClass="ASTMCore.ASTMSyntax.GASTMSyntaxObject"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.EntryDefinition"
+          name="EntryDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.EntryDefinition.formalParameters"
+            name="formalParameters" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FormalParameterDefinition"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.EntryDefinition.body"
+            name="body" upper="*" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.EnumLiteralDefinition"
+          name="EnumLiteralDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.EnumLiteralDefinition.value"
+            name="value" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.EnumTypeDeclaration"
+          name="EnumTypeDeclaration" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDeclaration"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.EnumTypeDefinition"
+          name="EnumTypeDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDefinition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.EnumTypeDefinition.definitionType"
+            name="definitionType" lower="1" type="ASTMCore.ASTMSyntax.Types.EnumType"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.External"
+          name="External" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.StorageSpecification"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FileLocal"
+          name="FileLocal" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.StorageSpecification"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FormalParameterDeclaration"
+          name="FormalParameterDeclaration" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Declaration"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FormalParameterDefinition"
+          name="FormalParameterDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DataDefinition"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDeclaration"
+          name="FunctionDeclaration" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Declaration">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDeclaration.formalParameters"
+            name="formalParameters" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FormalParameterDeclaration"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDeclaration.functionMemberAttributes"
+            name="functionMemberAttributes" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionMemberAttributes"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDefintion"
+          name="FunctionDefintion" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDefintion.returnType"
+            name="returnType" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDefintion.formalParameters"
+            name="formalParameters" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FormalParameterDefinition"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDefintion.functionMemberAttributes"
+            name="functionMemberAttributes" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionMemberAttributes"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDefintion.opensScope"
+            name="opensScope" lower="1" type="ASTMCore.ASTMSemantics.FunctionScope"
+            opposite="ASTMCore.ASTMSemantics.FunctionScope.scopeOpenedBy"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDefintion.body"
+            name="body" lower="1" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionMemberAttributes"
+          name="FunctionMemberAttributes" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionMemberAttributes.isFriend"
+            name="isFriend">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionMemberAttributes.isInline"
+            name="isInline">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionMemberAttributes.isThisConst"
+            name="isThisConst">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionMemberAttributes.virtualSpecifier"
+            name="virtualSpecifier" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.VirtualSpecification"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionPersistent"
+          name="FunctionPersistent" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.StorageSpecification"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.LabelDefinition"
+          name="LabelDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.LabelDefinition.labelname"
+            name="labelname" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.LabelDefinition.labelType"
+            name="labelType" lower="1" type="ASTMCore.ASTMSyntax.Types.LabelType"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name"
+          name="Name" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name.nameString"
+            name="nameString">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name.ofTypeReference"
+            name="ofTypeReference" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.NameSpaceDefinition"
+          name="NameSpaceDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.NameSpaceDefinition.nameSpace"
+            name="nameSpace" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.NameSpaceDefinition.body"
+            name="body" lower="1" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.NameSpaceDefinition.nameSpaceType"
+            name="nameSpaceType" lower="1" type="ASTMCore.ASTMSyntax.Types.NameSpaceType"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.NamedTypeDefinition"
+          name="NamedTypeDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDefinition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.NamedTypeDefinition.definitionType"
+            name="definitionType" lower="1" type="ASTMCore.ASTMSyntax.Types.NamedType"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Nodef"
+          name="Nodef" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.StorageSpecification"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.PerClassMember"
+          name="PerClassMember" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.StorageSpecification"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Private"
+          name="Private" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.AccessKind"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Protected"
+          name="Protected" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.AccessKind"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Public"
+          name="Public" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.AccessKind"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBCheckConstraint"
+          name="RDBCheckConstraint" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBConstraint">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBCheckConstraint.RDBConstraintType"
+            name="RDBConstraintType">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBCheckConstraint.RDBConstraintText"
+            name="RDBConstraintText">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBColumnDefinition"
+          name="RDBColumnDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBColumnDefinition.NotNull"
+            name="NotNull">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBConstraint"
+          name="RDBConstraint" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBCursorDefinition"
+          name="RDBCursorDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBCursorDefinition.SelectExpression"
+            name="SelectExpression" lower="1" type="ASTMCore.ASTMSyntax.Expression.RDBSelectExpression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBDatabaseDefinition"
+          name="RDBDatabaseDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBDatabaseDefinition.tableSpace"
+            name="tableSpace" type="ASTMCore.ASTMSyntax.Expression.RDBTableSpaceReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndex"
+          name="RDBIndex" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndex.NotNull"
+            name="NotNull">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndex.IsUnique"
+            name="IsUnique">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndex.indexColumn"
+            name="indexColumn" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndexColumn"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndexColumn"
+          name="RDBIndexColumn" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndexColumn.AscendingOrDescending"
+            name="AscendingOrDescending">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndexColumn.column"
+            name="column" lower="1" type="ASTMCore.ASTMSyntax.Expression.RDBColumnReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBRefIntegrity"
+          name="RDBRefIntegrity" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBConstraint">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBRefIntegrity.foreignKey"
+            name="foreignKey" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBColumnReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBRefIntegrity.parentKey"
+            name="parentKey" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBColumnReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBRefIntegrity.parentTable"
+            name="parentTable" lower="1" type="ASTMCore.ASTMSyntax.Expression.RDBColumnReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableDefinition"
+          name="RDBTableDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableDefinition.PrimKey"
+            name="PrimKey" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBColumnReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableDefinition.Column"
+            name="Column" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBColumnDefinition"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableDefinition.constraint"
+            name="constraint" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBConstraint"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableDefinition.Index"
+            name="Index" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndex"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableDefinition.trigger"
+            name="trigger" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTrigger"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableSpaceDefinition"
+          name="RDBTableSpaceDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableSpaceDefinition.table"
+            name="table" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBTableReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTrigger"
+          name="RDBTrigger" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBUniqueKey"
+          name="RDBUniqueKey" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBConstraint">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBUniqueKey.column"
+            name="column" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBColumnReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBUserDefinition"
+          name="RDBUserDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBUserDefinition.owns"
+            name="owns" lower="1" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableDefinition"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBViewDefinition"
+          name="RDBViewDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBViewDefinition.DefinedBy"
+            name="DefinedBy" lower="1" type="ASTMCore.ASTMSyntax.Expression.RDBSelectExpression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.StorageSpecification"
+          name="StorageSpecification" isAbstract="true" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDeclaration"
+          name="TypeDeclaration" isAbstract="true" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDeclaration.typeReference"
+            name="typeReference" lower="1" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDefinition"
+          name="TypeDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDefinition.typeName"
+            name="typeName" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.VariableDeclaration"
+          name="VariableDeclaration" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Declaration">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.VariableDeclaration.isMutable"
+            name="isMutable">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.VariableDefinition"
+          name="VariableDefinition" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DataDefinition"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Virtual"
+          name="Virtual" superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.VirtualSpecification"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.VirtualSpecification"
+          name="VirtualSpecification" isAbstract="true" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"/>
+       </nestedPackage>
+    <nestedPackage xmi:id="ASTMCore.ASTMSyntax.Directives" name="Directives" uri="Directives">
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Directives.Comment"
+          name="Comment" superClass="ASTMCore.ASTMSyntax.Directives.PreprocessorElement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Directives.Comment.body" name="body">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Directives.IncludeUnit"
+          name="IncludeUnit" superClass="ASTMCore.ASTMSyntax.Directives.PreprocessorElement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Directives.IncludeUnit.file" name="file"
+            lower="1" type="ASTMCore.ASTMSource.SourceFileReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Directives.MacroCall"
+          name="MacroCall" superClass="ASTMCore.ASTMSyntax.Directives.PreprocessorElement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Directives.MacroCall.refersTo"
+            name="refersTo" lower="1" type="ASTMCore.ASTMSyntax.Directives.MacroDefinition"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Directives.MacroDefinition"
+          name="MacroDefinition" superClass="ASTMCore.ASTMSyntax.Directives.PreprocessorElement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Directives.MacroDefinition.macroName"
+            name="macroName">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Directives.MacroDefinition.body"
+            name="body">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Directives.PreprocessorElement"
+          name="PreprocessorElement" isAbstract="true" superClass="ASTMCore.ASTMSyntax.GASTMSyntaxObject"/>
+        </nestedPackage>
+    <nestedPackage xmi:id="ASTMCore.ASTMSyntax.Expression" name="Expression" uri="Expression">
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.ActualParameter"
+          name="ActualParameter" isAbstract="true" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.ActualParameterExpression"
+          name="ActualParameterExpression" superClass="ASTMCore.ASTMSyntax.Expression.ActualParameter">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.ActualParameterExpression.value"
+            name="value" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Add"
+          name="Add" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.AddressOf"
+          name="AddressOf" superClass="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.AggregateExpression"
+          name="AggregateExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.And"
+          name="And" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.AnnotationExpression"
+          name="AnnotationExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.AnnotationExpression.annotationType"
+            name="annotationType" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.AnnotationExpression.memberValues"
+            name="memberValues" upper="*" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.ArrayAccess"
+          name="ArrayAccess" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.ArrayAccess.arrayName"
+            name="arrayName" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.ArrayAccess.subScripts"
+            name="subScripts" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Assign"
+          name="Assign" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.BinaryExpression"
+          name="BinaryExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.BinaryExpression.operator"
+            name="operator" lower="1" type="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.BinaryExpression.leftOperand"
+            name="leftOperand" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.BinaryExpression.rightOperand"
+            name="rightOperand" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.BinaryOperator"
+          name="BinaryOperator" isAbstract="true" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.BitAnd"
+          name="BitAnd" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.BitLeftShift"
+          name="BitLeftShift" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.BitLiteral"
+          name="BitLiteral" superClass="ASTMCore.ASTMSyntax.Expression.Literal"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.BitNot"
+          name="BitNot" superClass="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.BitOr"
+          name="BitOr" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.BitRightShift"
+          name="BitRightShift" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.BitXor"
+          name="BitXor" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.BooleanLiteral"
+          name="BooleanLiteral" superClass="ASTMCore.ASTMSyntax.Expression.Literal"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.ByReferenceActualParameterExpression"
+          name="ByReferenceActualParameterExpression" superClass="ASTMCore.ASTMSyntax.Expression.ActualParameterExpression"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.ByValueActualParameterExpression"
+          name="ByValueActualParameterExpression" superClass="ASTMCore.ASTMSyntax.Expression.ActualParameterExpression"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.CastExpression"
+          name="CastExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.CastExpression.castType"
+            name="castType" lower="1" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.CastExpression.expression"
+            name="expression" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.CharLiteral"
+          name="CharLiteral" superClass="ASTMCore.ASTMSyntax.Expression.Literal"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.CollectionExpression"
+          name="CollectionExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.CollectionExpression.expressionList"
+            name="expressionList" upper="*" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.ConditionalExpression"
+          name="ConditionalExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.ConditionalExpression.condition"
+            name="condition" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.ConditionalExpression.onTrueOperand"
+            name="onTrueOperand" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.ConditionalExpression.onFalseOperand"
+            name="onFalseOperand" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Decrement"
+          name="Decrement" superClass="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Deref"
+          name="Deref" superClass="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Divide"
+          name="Divide" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.EnumLiteral"
+          name="EnumLiteral" superClass="ASTMCore.ASTMSyntax.Expression.Literal"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Equal"
+          name="Equal" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Exponent"
+          name="Exponent" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Expression"
+          name="Expression" isAbstract="true" superClass="ASTMCore.ASTMSyntax.GASTMSyntaxObject">
+  <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.Expression.expressionType"
+            name="expressionType" lower="1" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.FunctionCallExpression"
+          name="FunctionCallExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.FunctionCallExpression.calledFunction"
+            name="calledFunction" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.FunctionCallExpression.actualParams"
+            name="actualParams" upper="*" type="ASTMCore.ASTMSyntax.Expression.ActualParameter"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Greater"
+          name="Greater" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.IdentifierReference"
+          name="IdentifierReference" superClass="ASTMCore.ASTMSyntax.Expression.NameReference"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Increment"
+          name="Increment" superClass="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.IntegerLiteral"
+          name="IntegerLiteral" superClass="ASTMCore.ASTMSyntax.Expression.Literal"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.LabelAccess"
+          name="LabelAccess" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.LabelAccess.labelName"
+            name="labelName" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.LabelAccess.labelDefinition"
+            name="labelDefinition" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.LabelDefinition"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Less"
+          name="Less" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Literal"
+          name="Literal" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.Literal.value" name="value">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#String"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.MissingActualParameter"
+          name="MissingActualParameter" superClass="ASTMCore.ASTMSyntax.Expression.ActualParameter"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Modulus"
+          name="Modulus" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Multiply"
+          name="Multiply" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.NameReference"
+          name="NameReference" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.NameReference.identifierName"
+            name="identifierName" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.NameReference.refersTo"
+            name="refersTo" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.NewExpression"
+          name="NewExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.NewExpression.newType"
+            name="newType" lower="1" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.NewExpression.actualParams"
+            name="actualParams" upper="*" type="ASTMCore.ASTMSyntax.Expression.ActualParameter"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Not"
+          name="Not" superClass="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.NotEqual"
+          name="NotEqual" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.NotGreater"
+          name="NotGreater" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.NotLess"
+          name="NotLess" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.OperatorAssign"
+          name="OperatorAssign" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.OperatorAssign.operator"
+            name="operator" lower="1" type="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Or"
+          name="Or" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.PostDecrement"
+          name="PostDecrement" superClass="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.PostIncrement"
+          name="PostIncrement" superClass="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.QualifiedIdentifierReference"
+          name="QualifiedIdentifierReference" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Expression.NameReference">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.QualifiedIdentifierReference.qualifiers"
+            name="qualifiers" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.QualifiedIdentifierReference.member"
+            name="member" lower="1" type="ASTMCore.ASTMSyntax.Expression.IdentifierReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.QualifiedOverData"
+          name="QualifiedOverData" superClass="ASTMCore.ASTMSyntax.Expression.QualifiedIdentifierReference"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.QualifiedOverPtr"
+          name="QualifiedOverPtr" superClass="ASTMCore.ASTMSyntax.Expression.QualifiedIdentifierReference"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.RDBColumnReference"
+          name="RDBColumnReference" superClass="ASTMCore.ASTMSyntax.Expression.IdentifierReference">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.RDBColumnReference.table"
+            name="table" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.RDBHostVariableReference"
+          name="RDBHostVariableReference" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.RDBHostVariableReference.baseVariable"
+            name="baseVariable" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.RDBHostVariableReference.indicator"
+            name="indicator" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.RDBSelectExpression"
+          name="RDBSelectExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.RDBSelectExpression.table"
+            name="table" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBTableReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.RDBSelectExpression.where"
+            name="where" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.RDBSelectExpression.column"
+            name="column" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBColumnReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.RDBTableAlias"
+          name="RDBTableAlias" superClass="ASTMCore.ASTMSyntax.Expression.IdentifierReference"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.RDBTableReference"
+          name="RDBTableReference" superClass="ASTMCore.ASTMSyntax.Expression.IdentifierReference">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.RDBTableReference.alias"
+            name="alias" type="ASTMCore.ASTMSyntax.Expression.RDBTableAlias"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.RDBTableSpaceReference"
+          name="RDBTableSpaceReference" superClass="ASTMCore.ASTMSyntax.Expression.IdentifierReference"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.RangeExpression"
+          name="RangeExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.RangeExpression.fromExpression"
+            name="fromExpression" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.RangeExpression.toExpression"
+            name="toExpression" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.RealLiteral"
+          name="RealLiteral" superClass="ASTMCore.ASTMSyntax.Expression.Literal"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.StringLiteral"
+          name="StringLiteral" superClass="ASTMCore.ASTMSyntax.Expression.Literal"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.Subtract"
+          name="Subtract" superClass="ASTMCore.ASTMSyntax.Expression.BinaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.TypeQualifiedIdentifierReference"
+          name="TypeQualifiedIdentifierReference" superClass="ASTMCore.ASTMSyntax.Expression.NameReference">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.TypeQualifiedIdentifierReference.member"
+            name="member" lower="1" type="ASTMCore.ASTMSyntax.Expression.IdentifierReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.TypeQualifiedIdentifierReference.aggregateType"
+            name="aggregateType" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.UnaryExpression"
+          name="UnaryExpression" superClass="ASTMCore.ASTMSyntax.Expression.Expression">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.UnaryExpression.operator"
+            name="operator" lower="1" type="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Expression.UnaryExpression.operand"
+            name="operand" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.UnaryMinus"
+          name="UnaryMinus" superClass="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.UnaryOperator"
+          name="UnaryOperator" isAbstract="true" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Expression.UnaryPlus"
+          name="UnaryPlus" superClass="ASTMCore.ASTMSyntax.Expression.UnaryOperator"/>
+        </nestedPackage>
+    <nestedPackage xmi:id="ASTMCore.ASTMSyntax.Statement" name="Statement" uri="Statement">
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.BlockStatement"
+          name="BlockStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.BlockStatement.subStatements"
+            name="subStatements" upper="*" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.BlockStatement.opensScope"
+            name="opensScope" lower="1" type="ASTMCore.ASTMSemantics.BlockScope"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.BreakStatement"
+          name="BreakStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.BreakStatement.target"
+            name="target" type="ASTMCore.ASTMSyntax.Expression.LabelAccess"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.CaseBlock"
+          name="CaseBlock" superClass="ASTMCore.ASTMSyntax.Statement.SwitchCase">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.CaseBlock.caseExpression"
+            name="caseExpression" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.CatchBlock"
+          name="CatchBlock" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.CatchBlock.body" name="body"
+            lower="1" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.ContinueStatement"
+          name="ContinueStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.ContinueStatement.target"
+            name="target" type="ASTMCore.ASTMSyntax.Expression.LabelAccess"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.DeclarationOrDefinitionStatement"
+          name="DeclarationOrDefinitionStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.DeclarationOrDefinitionStatement.declOrDefn"
+            name="declOrDefn" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.DefaultBlock"
+          name="DefaultBlock" superClass="ASTMCore.ASTMSyntax.Statement.SwitchCase"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.DeleteStatement"
+          name="DeleteStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.DeleteStatement.operand"
+            name="operand" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.DoWhileStatement"
+          name="DoWhileStatement" superClass="ASTMCore.ASTMSyntax.Statement.LoopStatement"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.EmptyStatement"
+          name="EmptyStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.ExpressionStatement"
+          name="ExpressionStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.ExpressionStatement.expression"
+            name="expression" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.ForCheckAfterStatement"
+          name="ForCheckAfterStatement" superClass="ASTMCore.ASTMSyntax.Statement.ForStatement"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.ForCheckBeforeStatement"
+          name="ForCheckBeforeStatement" superClass="ASTMCore.ASTMSyntax.Statement.ForStatement"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.ForStatement"
+          name="ForStatement" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Statement.LoopStatement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.ForStatement.initBody"
+            name="initBody" upper="*" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.ForStatement.iterationBody"
+            name="iterationBody" upper="*" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.IfStatement"
+          name="IfStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.IfStatement.condition"
+            name="condition" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.IfStatement.thenBody"
+            name="thenBody" lower="1" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.IfStatement.elseBody"
+            name="elseBody" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.JumpStatement"
+          name="JumpStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.JumpStatement.target"
+            name="target" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.LabeledStatement"
+          name="LabeledStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.LabeledStatement.label"
+            name="label" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.LabelDefinition"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.LabeledStatement.statement"
+            name="statement" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.LoopStatement"
+          name="LoopStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.LoopStatement.condition"
+            name="condition" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.LoopStatement.body"
+            name="body" lower="1" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.RDBCloseCursorStatement"
+          name="RDBCloseCursorStatement" superClass="ASTMCore.ASTMSyntax.Statement.RDBCursorStatement"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.RDBConnectStatement"
+          name="RDBConnectStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBConnectStatement.connectString"
+            name="connectString" lower="1" type="ASTMCore.ASTMSyntax.Expression.RDBHostVariableReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.RDBCursorStatement"
+          name="RDBCursorStatement" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBCursorStatement.cursor"
+            name="cursor" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.RDBDeleteStatement"
+          name="RDBDeleteStatement" superClass="ASTMCore.ASTMSyntax.Statement.RDBModifyStatement"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.RDBFetchCursorStatement"
+          name="RDBFetchCursorStatement" superClass="ASTMCore.ASTMSyntax.Statement.RDBCursorStatement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBFetchCursorStatement.into"
+            name="into" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBHostVariableReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.RDBInsertStatement"
+          name="RDBInsertStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBInsertStatement.intoTable"
+            name="intoTable" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBTableReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBInsertStatement.columns"
+            name="columns" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBColumnReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBInsertStatement.values"
+            name="values" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.RDBModifyStatement"
+          name="RDBModifyStatement" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBModifyStatement.table"
+            name="table" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBTableReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBModifyStatement.where"
+            name="where" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.RDBOpenCursorStatement"
+          name="RDBOpenCursorStatement" superClass="ASTMCore.ASTMSyntax.Statement.RDBCursorStatement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBOpenCursorStatement.values"
+            name="values" upper="*" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.RDBSelectStatement"
+          name="RDBSelectStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBSelectStatement.selectExpression"
+            name="selectExpression" lower="1" type="ASTMCore.ASTMSyntax.Expression.RDBSelectExpression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBSelectStatement.intoVariable"
+            name="intoVariable" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Expression.RDBHostVariableReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.RDBUpdateStatement"
+          name="RDBUpdateStatement" superClass="ASTMCore.ASTMSyntax.Statement.RDBModifyStatement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.RDBUpdateStatement.values"
+            name="values" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.ReturnStatement"
+          name="ReturnStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.ReturnStatement.returnValue"
+            name="returnValue" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.Statement"
+          name="Statement" isAbstract="true" superClass="ASTMCore.ASTMSyntax.GASTMSyntaxObject"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.SwitchCase"
+          name="SwitchCase" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.SwitchCase.isEvaluateAllCases"
+            name="isEvaluateAllCases">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.SwitchCase.body" name="body"
+            lower="1" upper="*" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.SwitchStatement"
+          name="SwitchStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.SwitchStatement.switchExpression"
+            name="switchExpression" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.SwitchStatement.cases"
+            name="cases" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Statement.SwitchCase"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.TerminateStatement"
+          name="TerminateStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.ThrowStatement"
+          name="ThrowStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.ThrowStatement.exception"
+            name="exception" lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.TryStatement"
+          name="TryStatement" superClass="ASTMCore.ASTMSyntax.Statement.Statement">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.TryStatement.guardedStatement"
+            name="guardedStatement" lower="1" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.TryStatement.catchBlocks"
+            name="catchBlocks" upper="*" type="ASTMCore.ASTMSyntax.Statement.CatchBlock"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.TryStatement.finalStatement"
+            name="finalStatement" type="ASTMCore.ASTMSyntax.Statement.Statement"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.TypesCatchBlock"
+          name="TypesCatchBlock" superClass="ASTMCore.ASTMSyntax.Statement.CatchBlock">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.TypesCatchBlock.exceptions"
+            name="exceptions" lower="1" upper="*" type="ASTMCore.ASTMSyntax.Types.Type"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.VariableCatchBlock"
+          name="VariableCatchBlock" superClass="ASTMCore.ASTMSyntax.Statement.CatchBlock">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Statement.VariableCatchBlock.exceptionVariable"
+            name="exceptionVariable" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DataDefinition"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Statement.WhileStatement"
+          name="WhileStatement" superClass="ASTMCore.ASTMSyntax.Statement.LoopStatement"/>
+        </nestedPackage>
+    <nestedPackage xmi:id="ASTMCore.ASTMSyntax.Types" name="Types" uri="Types">
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.AggregateType"
+          name="AggregateType" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.DataType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.AggregateType.members" name="members"
+            lower="1" upper="*" type="ASTMCore.ASTMSyntax.Types.MemberObject"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.AggregateType.opensScope"
+            name="opensScope" lower="1" type="ASTMCore.ASTMSemantics.AggregateScope"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.AnnotationType"
+          name="AnnotationType" superClass="ASTMCore.ASTMSyntax.Types.AggregateType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.ArrayType"
+          name="ArrayType" superClass="ASTMCore.ASTMSyntax.Types.ConstructedType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.ArrayType.ranks" name="ranks"
+            lower="1" upper="*" type="ASTMCore.ASTMSyntax.Types.Dimension"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.Boolean"
+          name="Boolean" superClass="ASTMCore.ASTMSyntax.Types.PrimitiveType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.ByReferenceFormalParameterType"
+          name="ByReferenceFormalParameterType" superClass="ASTMCore.ASTMSyntax.Types.FormalParameterType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.ByValueFormalParameterType"
+          name="ByValueFormalParameterType" superClass="ASTMCore.ASTMSyntax.Types.FormalParameterType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.Byte" name="Byte"
+          superClass="ASTMCore.ASTMSyntax.Types.NumberType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.Character"
+          name="Character" superClass="ASTMCore.ASTMSyntax.Types.NumberType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.ClassType"
+          name="ClassType" superClass="ASTMCore.ASTMSyntax.Types.AggregateType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.ClassType.derivesFrom" name="derivesFrom"
+            upper="*" type="ASTMCore.ASTMSyntax.Types.DerivesFrom"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.CollectionType"
+          name="CollectionType" superClass="ASTMCore.ASTMSyntax.Types.ConstructedType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.ConstructedType"
+          name="ConstructedType" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.DataType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.ConstructedType.baseType"
+            name="baseType" lower="1" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.DataType"
+          name="DataType" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.Type"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.DerivesFrom"
+          name="DerivesFrom" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.DerivesFrom.accessKind"
+            name="accessKind" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.AccessKind"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.DerivesFrom.className" name="className"
+            upper="*" type="ASTMCore.ASTMSyntax.Types.NamedTypeReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.DerivesFrom.virtualSpecifier"
+            name="virtualSpecifier" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.VirtualSpecification"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.Dimension"
+          name="Dimension" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.Dimension.lowBound" name="lowBound"
+            type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.Dimension.highBound" name="highBound"
+            lower="1" type="ASTMCore.ASTMSyntax.Expression.Expression"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.Double" name="Double"
+          superClass="ASTMCore.ASTMSyntax.Types.RealType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.EnumType"
+          name="EnumType" superClass="ASTMCore.ASTMSyntax.Types.DataType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.EnumType.enumLiterals" name="enumLiterals"
+            lower="1" upper="*" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.EnumLiteralDefinition"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.ExceptionType"
+          name="ExceptionType" superClass="ASTMCore.ASTMSyntax.Types.DataType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.FormalParameterType"
+          name="FormalParameterType" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.DataType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.FormalParameterType.type"
+            name="type" lower="1" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.FunctionType"
+          name="FunctionType" superClass="ASTMCore.ASTMSyntax.Types.Type">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.FunctionType.returnType"
+            name="returnType" type="ASTMCore.ASTMSyntax.Types.TypeReference"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.FunctionType.parameterTypes"
+            name="parameterTypes" upper="*" type="ASTMCore.ASTMSyntax.Types.FormalParameterType"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.Integer"
+          name="Integer" superClass="ASTMCore.ASTMSyntax.Types.IntegralType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.IntegralType"
+          name="IntegralType" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.NumberType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.IntegralType.size" name="size">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Integer"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.LabelType"
+          name="LabelType" superClass="ASTMCore.ASTMSyntax.Types.Type"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.LongDouble"
+          name="LongDouble" superClass="ASTMCore.ASTMSyntax.Types.RealType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.LongInteger"
+          name="LongInteger" superClass="ASTMCore.ASTMSyntax.Types.IntegralType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.MemberObject"
+          name="MemberObject" superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.MemberObject.offset" name="offset">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Integer"/>
+        </ownedAttribute>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.MemberObject.member" name="member"
+            lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.NameSpaceType"
+          name="NameSpaceType" superClass="ASTMCore.ASTMSyntax.Types.Type"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.NamedType"
+          name="NamedType" superClass="ASTMCore.ASTMSyntax.Types.DataType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.NamedType.body" name="body"
+            lower="1" type="ASTMCore.ASTMSyntax.Types.Type"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.NamedTypeReference"
+          name="NamedTypeReference" superClass="ASTMCore.ASTMSyntax.Types.TypeReference">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.NamedTypeReference.typeName"
+            name="typeName" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name"/>
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.NamedTypeReference.type"
+            name="type" lower="1" type="ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDefinition"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.NumberType"
+          name="NumberType" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.PrimitiveType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.NumberType.isSigned" name="isSigned">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.PointerType"
+          name="PointerType" superClass="ASTMCore.ASTMSyntax.Types.ConstructedType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.PointerType.size" name="size">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Integer"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.PrimitiveType"
+          name="PrimitiveType" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.DataType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBBlob"
+          name="RDBBlob" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBBoolean"
+          name="RDBBoolean" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBChar"
+          name="RDBChar" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBClob"
+          name="RDBClob" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBColumnType"
+          name="RDBColumnType" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.DataType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBCursorType"
+          name="RDBCursorType" superClass="ASTMCore.ASTMSyntax.Types.DataType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBDataBaseType"
+          name="RDBDataBaseType" superClass="ASTMCore.ASTMSyntax.Types.DataType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBDate"
+          name="RDBDate" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBDecimal"
+          name="RDBDecimal" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBFile"
+          name="RDBFile" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBFloat"
+          name="RDBFloat" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBInt" name="RDBInt"
+          superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBInteger"
+          name="RDBInteger" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBLong"
+          name="RDBLong" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBNClob"
+          name="RDBNClob" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBNumber"
+          name="RDBNumber" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBRaw" name="RDBRaw"
+          superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBReal"
+          name="RDBReal" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBRowid"
+          name="RDBRowid" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBString"
+          name="RDBString" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBTableSpaceType"
+          name="RDBTableSpaceType" superClass="ASTMCore.ASTMSyntax.Types.DataType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBTableType"
+          name="RDBTableType" superClass="ASTMCore.ASTMSyntax.Types.DataType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBTimeStamp"
+          name="RDBTimeStamp" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBUserType"
+          name="RDBUserType" superClass="ASTMCore.ASTMSyntax.Types.DataType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBVarChar"
+          name="RDBVarChar" superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RDBViewType"
+          name="RDBViewType" superClass="ASTMCore.ASTMSyntax.Types.DataType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RangeType"
+          name="RangeType" superClass="ASTMCore.ASTMSyntax.Types.ConstructedType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.Real" name="Real"
+          superClass="ASTMCore.ASTMSyntax.Types.RealType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.RealType"
+          name="RealType" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.NumberType">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.RealType.precision" name="precision">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Integer"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.ReferenceType"
+          name="ReferenceType" superClass="ASTMCore.ASTMSyntax.Types.ConstructedType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.ShortInteger"
+          name="ShortInteger" superClass="ASTMCore.ASTMSyntax.Types.IntegralType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.StructureType"
+          name="StructureType" superClass="ASTMCore.ASTMSyntax.Types.AggregateType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.Type" name="Type"
+          isAbstract="true" superClass="ASTMCore.ASTMSyntax.GASTMSyntaxObject">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.Type.isConst" name="isConst">
+          <type xmi:type="emof:PrimitiveType" href="http://schema.omg.org/spec/mof/2.0/emof.xmi#Boolean"/>
+        </ownedAttribute>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.TypeReference"
+          name="TypeReference" isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.Type"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.UnionType"
+          name="UnionType" superClass="ASTMCore.ASTMSyntax.Types.AggregateType"/>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.UnnamedTypeReference"
+          name="UnnamedTypeReference" superClass="ASTMCore.ASTMSyntax.Types.TypeReference">
+        <ownedAttribute xmi:id="ASTMCore.ASTMSyntax.Types.UnnamedTypeReference.type"
+            name="type" lower="1" type="ASTMCore.ASTMSyntax.Types.Type"/>
+      </ownedType>
+      <ownedType xmi:type="emof:Class" xmi:id="ASTMCore.ASTMSyntax.Types.Void" name="Void"
+          superClass="ASTMCore.ASTMSyntax.Types.PrimitiveType"/>
+        </nestedPackage>
+      </nestedPackage>
+ </emof:Package>

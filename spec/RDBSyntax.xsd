@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="ASTMSyntax" xmlns:null_1="DeclarationAndDefinition" xmlns:null_2="ASTMSemantics" xmlns:null_3="ASTMCore" xmlns:null_4="ASTMSource" xmlns:null_5="Expression" xmlns:null_6="Directives" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="ASTMSyntax">
+<xsd:import namespace="Directives" schemaLocation="Directives.xsd"/>
+<xsd:import namespace="Expression" schemaLocation="Expression.xsd"/>
+<xsd:import namespace="ASTMSource" schemaLocation="ASTMSource.xsd"/>
+<xsd:import namespace="ASTMCore" schemaLocation="ASTMCore.xsd"/>
+<xsd:import namespace="ASTMSemantics" schemaLocation="ASTMSemantics.xsd"/>
+<xsd:import namespace="DeclarationAndDefinition" schemaLocation="DeclarationAndDefinition.xsd"/>
+<xsd:import namespace="http://www.omg.org/XMI" schemaLocation="XMI.xsd"/>
+<xsd:complexType name="GASTMSyntaxObject">
+<xsd:complexContent>
+<xsd:extension base="null_3:GASTMObject">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="locationInfo" type="null_4:SourceLocation"/>
+<xsd:element name="annotations" type="null_5:AnnotationExpression"/>
+<xsd:element name="preProcessorElements" type="null_6:PreprocessorElement"/>
+</xsd:choice>
+<xsd:attribute name="locationInfo" type="xsd:string"/>
+<xsd:attribute name="annotations" type="xsd:string"/>
+<xsd:attribute name="preProcessorElements" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="GASTMSyntaxObject" type="GASTMSyntaxObject"/>
+</xsd:schema>

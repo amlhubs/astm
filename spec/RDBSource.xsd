@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns="ASTMSource" xmlns:null_1="ASTMCore" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="ASTMSource">
+<xsd:import namespace="ASTMCore" schemaLocation="ASTMCore.xsd"/>
+<xsd:import namespace="http://www.omg.org/XMI" schemaLocation="XMI.xsd"/>
+<xsd:complexType name="GASTMSourceObject">
+<xsd:complexContent>
+<xsd:extension base="null_1:GASTMObject"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="GASTMSourceObject" type="GASTMSourceObject"/>
+<xsd:complexType name="SourceFile">
+<xsd:complexContent>
+<xsd:extension base="GASTMSourceObject">
+<xsd:attribute name="path" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="SourceFile" type="SourceFile"/>
+<xsd:complexType name="SourceLocation">
+<xsd:complexContent>
+<xsd:extension base="GASTMSourceObject">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="inSourceFile" type="SourceFile"/>
+</xsd:choice>
+<xsd:attribute name="startLine" type="xsd:string"/>
+<xsd:attribute name="startPosition" type="xsd:string"/>
+<xsd:attribute name="endLine" type="xsd:string"/>
+<xsd:attribute name="endPosition" type="xsd:string"/>
+<xsd:attribute name="inSourceFile" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="SourceLocation" type="SourceLocation"/>
+<xsd:complexType name="SourceFileReference">
+<xsd:complexContent>
+<xsd:extension base="SourceFile">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="locationInfo" type="SourceLocation"/>
+<xsd:element name="ofSourceFile" type="SourceFile"/>
+</xsd:choice>
+<xsd:attribute name="locationInfo" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="SourceFileReference" type="SourceFileReference"/>
+<xsd:complexType name="CompilationUnit">
+<xsd:complexContent>
+<xsd:extension base="SourceFile">
+<xsd:choice maxOccurs="unbounded" minOccurs="0">
+<xsd:element name="fragments" type="null_1:DefinitionUnit"/>
+<xsd:element name="opensScope" type="null_2:ProgramScope"/>
+</xsd:choice>
+<xsd:attribute name="language" type="xsd:string"/>
+<xsd:attribute name="fragments" type="xsd:string"/>
+<xsd:attribute name="opensScope" type="xsd:string"/>
+</xsd:extension>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="CompilationUnit" type="CompilationUnit"/>
+<xsd:complexType name="MinorSyntaxObjects">
+<xsd:complexContent>
+<xsd:extension base="GASTMSyntaxObject"/>
+</xsd:complexContent>
+</xsd:complexType>
+<xsd:element name="MinorSyntaxObjects" type="MinorSyntaxObjects"/>
+</xsd:schema>
