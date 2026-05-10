@@ -79,10 +79,6 @@
 // waves are loaded as a single compilation unit, downstream code may
 // downcast through the eventual structural interfaces.
 
-/** Resolved by Wave 4 (Expression). xmi:id: `ASTMCore.ASTMSyntax.Expression.AnnotationExpression`. */
-type IAnnotationExpression = unknown;
-/** Resolved by Wave 4 (Expression). xmi:id: `ASTMCore.ASTMSyntax.Expression.Expression`. */
-type IExpression = unknown;
 /** Resolved by Wave 5 (Statement). xmi:id: `ASTMCore.ASTMSyntax.Statement.Statement`. */
 type IStatement = unknown;
 
@@ -3887,4 +3883,2164 @@ export class NameSpaceDefinition extends DefintionObject implements INameSpaceDe
 
 // ═══════════════════════════════════════════════════════════════════════════
 // END Implementer #3 (Wave 1.3). Next implementer starts at class 101.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BEGIN Implementer #4 (Wave 1.4): GASTM Expression — 65 metaclasses
+//
+// Scope: ASTMCore.ASTMSyntax.Expression package — the largest single
+// partition of the GASTM. Comprises:
+//   • Abstract roots (Expression, NameReference,
+//     QualifiedIdentifierReference, BinaryOperator, UnaryOperator,
+//     ActualParameter)                                            —  6 classes
+//   • Concrete Expression descendants                             — 13 classes
+//     (Literal, AnnotationExpression, ArrayAccess, BinaryExpression,
+//      UnaryExpression, CastExpression, ConditionalExpression,
+//      FunctionCallExpression, NewExpression, RangeExpression,
+//      AggregateExpression, CollectionExpression, LabelAccess)
+//   • Concrete Literal leaves                                     —  7 classes
+//     (BitLiteral, BooleanLiteral, CharLiteral, EnumLiteral,
+//      IntegerLiteral, RealLiteral, StringLiteral)
+//   • Concrete NameReference leaves                               —  2 classes
+//     (IdentifierReference, TypeQualifiedIdentifierReference)
+//   • Concrete QualifiedIdentifierReference leaves                —  2 classes
+//     (QualifiedOverData, QualifiedOverPtr)
+//   • Concrete BinaryOperator leaves                              — 21 classes
+//     (Add, And, Assign, BitAnd, BitLeftShift, BitOr, BitRightShift,
+//      BitXor, Divide, Equal, Exponent, Greater, Less, Modulus,
+//      Multiply, NotEqual, NotGreater, NotLess, OperatorAssign,
+//      Or, Subtract)
+//   • Concrete UnaryOperator leaves                               — 10 classes
+//     (AddressOf, BitNot, Decrement, Deref, Increment, Not,
+//      PostDecrement, PostIncrement, UnaryMinus, UnaryPlus)
+//   • Concrete ActualParameter leaves                             —  2 classes
+//     (ActualParameterExpression, MissingActualParameter)
+//   • Concrete ActualParameterExpression leaves                   —  2 classes
+//     (ByReferenceActualParameterExpression,
+//      ByValueActualParameterExpression)
+//                                                                  ────────
+//                                                                  65 classes
+//
+// Notes on OMG spec choices observed during this wave:
+//   1. The PDF §8.2.1.4 prose is the canonical Expression-package
+//      narrative. EMOF is the normative source-of-truth for structural
+//      facts (super-class edges, attribute names, cardinalities). Where
+//      the PDF prose diverges from EMOF, EMOF prevails. Divergences
+//      observed:
+//        • PDF §8.2.1.4.10 spells AnnotationExpression's first attribute
+//          `annotationType` (camelCase 'T'). EMOF spells it
+//          `annotationtype` (lowercase 't'). We honour EMOF.
+//        • PDF §8.2.1.4.13 spells ArrayAccess's second attribute
+//          `subscripts` (lowercase 's'). EMOF spells it `subScripts`
+//          (capital 'S'). We honour EMOF.
+//        • PDF §8.2.1.4.9 NameReference's `refersTo` target is
+//          `DefinitionObject` in prose. EMOF types it `DefintionObject`
+//          (OMG's "Defintion" misspelling). We honour EMOF.
+//        • PDF §8.2.1.4.11.2.1 names the metaclass `QualifiedOverPointer`
+//          in the heading but `QualifiedOverPtr` in the hierarchy block
+//          and prose. EMOF declares `QualifiedOverPtr`. We honour EMOF.
+//        • PDF §8.2.1.4.11.1 IdentifierReference is described as having
+//          its own `Qualifiers` and `RefersTo` associations. EMOF
+//          declares IdentifierReference WITH ZERO own attributes — its
+//          `identifierName` and `refersTo` are inherited from
+//          NameReference. We honour EMOF.
+//   2. PDF §8.2.1.5.9.1 OperatorAssign declares an own `operator :
+//      BinaryOperator` attribute beyond its inherited operator slot.
+//      EMOF confirms this redeclaration. We surface OperatorAssign's
+//      own `operator` attribute.
+//   3. The EMOF places `BinaryOperator`, `UnaryOperator`, and
+//      `ActualParameter` under `ASTMCore.ASTMSyntax.Expression` (not
+//      under `ASTMCore.ASTMSyntax`) — they specialise MinorSyntaxObject
+//      but their xmi:id paths sit in the Expression package. The PDF
+//      §8.2.1.5.8 / §8.2.1.5.9 / §8.2.1.5.9.5 place these under
+//      MinorSyntaxObject in the narrative. EMOF placement wins for the
+//      `@section` and `@xmiId` JSDoc lines.
+//   4. Literal::value is typed to primitive `String` in EMOF. All
+//      seven Literal leaves (BitLiteral, BooleanLiteral, CharLiteral,
+//      EnumLiteral, IntegerLiteral, RealLiteral, StringLiteral)
+//      inherit this without redeclaration — the lexical form is
+//      carried as a String regardless of the Literal's semantic type,
+//      consistent with ASTM's role as a source-text-preserving AST
+//      representation.
+//   5. AggregateExpression has no own attributes in EMOF. PDF
+//      §8.2.1.4.3 prose: "The AggregateExpression is a subclass of
+//      Expression, has no associations, properties or subclasses."
+//      Definition: "Expressions consisting of a list of subexpressions"
+//      — but the list itself is NOT declared in EMOF. The
+//      CollectionExpression sibling (with `expressionList`) is the
+//      structural carrier; the AggregateExpression vs
+//      CollectionExpression split appears to be a forward-compatible
+//      vestige of an earlier design.
+//   6. Stale forward-shadow aliases (`IExpression`,
+//      `IAnnotationExpression`) declared by Wave 1.1's alias block have
+//      been REMOVED because this wave authors the real interfaces. The
+//      remaining forward shadow (`IStatement`) is still consumed by
+//      Wave 5 (Statement).
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── 101. Expression (§8.2.1.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Expression
+ * @metaclass Expression (abstract)
+ * @generalization GASTMSyntaxObject
+ * @definition All expressions
+ * @note §8.2.1.4 prose: "The class Expression has unary association
+ *   expressionType to a TypeReference, and subclasses Literal,
+ *   CastExpression, AggregateExpression, UnaryExpression,
+ *   BinaryExpression, ConditionalExpression, RangeExpression,
+ *   FunctionCallExpression, NewExpression, NameReference, LabelAccess,
+ *   ArrayAccess, AnnotationExpression, and CollectionExpression."
+ *   EMOF declares Expression with `isAbstract="true"`.
+ * @ownedAttributes
+ *   • expressionType : TypeReference [1..1] -- §8.2.1.4: unary association expressionType to TypeReference. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IExpression extends IGASTMSyntaxObject {
+  readonly expressionType: ITypeReference;
+}
+
+export abstract class Expression extends GASTMSyntaxObject implements IExpression {
+  override readonly metaClass: string = "Expression";
+  readonly expressionType: ITypeReference;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.expressionType = args.expressionType;
+  }
+}
+
+// ─── 102. NameReference (§8.2.1.4.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.NameReference
+ * @metaclass NameReference (abstract)
+ * @generalization Expression
+ * @definition References to named entities
+ * @note §8.2.1.4.9 prose: "The class NameReference is a subclass of
+ *   Expression, and unary semantic association RefersTo to the inner
+ *   class DeclarationOrDefinition, unary association identifierName to
+ *   class Name, and subclasses IdentifierReference,
+ *   QualifiedIdentifierReference, and TypeQualifiedIdentifierReference."
+ *   EMOF declares NameReference with `isAbstract="true"`. PDF prose
+ *   types `refersTo` to `DefinitionObject` (correct English) but EMOF
+ *   types it `DefintionObject` (OMG's misspelling). We honour EMOF.
+ * @ownedAttributes
+ *   • identifierName : Name             [1..1] -- §8.2.1.4.9: unary association identifierName to Name. EMOF lower="1".
+ *   • refersTo       : DefintionObject  [1..1] -- §8.2.1.4.9: semantic association refersTo to DefintionObject (EMOF spelling; PDF: DefinitionObject). EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface INameReference extends IExpression {
+  readonly identifierName: IName;
+  readonly refersTo: IDefintionObject;
+}
+
+export abstract class NameReference extends Expression implements INameReference {
+  override readonly metaClass: string = "NameReference";
+  readonly identifierName: IName;
+  readonly refersTo: IDefintionObject;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    identifierName: IName;
+    refersTo: IDefintionObject;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.identifierName = args.identifierName;
+    this.refersTo = args.refersTo;
+  }
+}
+
+// ─── 103. QualifiedIdentifierReference (§8.2.1.4.11.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.11.2
+ * @xmiId ASTMCore.ASTMSyntax.Expression.QualifiedIdentifierReference
+ * @metaclass QualifiedIdentifierReference (abstract)
+ * @generalization NameReference
+ * @definition References to entities with qualified names
+ * @note §8.2.1.4.11.2 prose: "The class QualifiedIdentifierReference is
+ *   a subclass of NameReference, and has unary association qualifiers to
+ *   class Expression and unary association member to the class
+ *   IdentifierReference and subclasses QualifiedOverData and
+ *   QualifiedOverPtrs." EMOF declares QualifiedIdentifierReference with
+ *   `isAbstract="true"`. PDF prose spells the second subclass
+ *   `QualifiedOverPtrs` (plural), §8.2.1.4.11.2.1 heading spells it
+ *   `QualifiedOverPointer`, EMOF declares `QualifiedOverPtr` (singular,
+ *   abbreviated). We honour EMOF.
+ * @ownedAttributes
+ *   • qualifiers : Expression          [1..1] -- §8.2.1.4.11.2: unary association qualifiers to Expression. EMOF lower="1".
+ *   • member     : IdentifierReference [1..1] -- §8.2.1.4.11.2: unary association member to IdentifierReference. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IQualifiedIdentifierReference extends INameReference {
+  readonly qualifiers: IExpression;
+  readonly member: IIdentifierReference;
+}
+
+export abstract class QualifiedIdentifierReference extends NameReference implements IQualifiedIdentifierReference {
+  override readonly metaClass: string = "QualifiedIdentifierReference";
+  readonly qualifiers: IExpression;
+  readonly member: IIdentifierReference;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    identifierName: IName;
+    refersTo: IDefintionObject;
+    qualifiers: IExpression;
+    member: IIdentifierReference;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      identifierName: args.identifierName,
+      refersTo: args.refersTo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.qualifiers = args.qualifiers;
+    this.member = args.member;
+  }
+}
+
+// ─── 104. BinaryOperator (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.BinaryOperator
+ * @metaclass BinaryOperator (abstract)
+ * @generalization MinorSyntaxObject
+ * @definition Operators taking two operands
+ * @note §8.2.1.5.9 prose: "The inner class BinaryOperator is a subclass
+ *   of OtherSyntaxObject, and has primitive terminal subclasses Add,
+ *   Subtract, Multiply, Divide, Modulus, Exponent, And, Or, Equal,
+ *   NotEqual, Greater, NotGreater, Less, NotLess, BitAnd, BitOr, BitXor,
+ *   BitLeftShift, BitRightShift, Assign." PDF places BinaryOperator
+ *   under MinorSyntaxObject ("OtherSyntaxObject" is the prose synonym).
+ *   EMOF places its xmi:id under the Expression package
+ *   (`ASTMCore.ASTMSyntax.Expression.BinaryOperator`) with
+ *   `superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"`. EMOF marks
+ *   it `isAbstract="true"`.
+ *   Semantics (§8.2.1.5.9): "Operators And, Or, BitAnd, BitOr, BitXor
+ *   have short-circuit semantics."
+ * @ownedAttributes (none -- BinaryOperator is a structural marker; the
+ *   operator identity is carried by the concrete leaf metaclass)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBinaryOperator extends IMinorSyntaxObject {
+  // structural marker — concrete subclasses carry the operator identity via
+  // their `metaClass` discriminator.
+}
+
+export abstract class BinaryOperator extends MinorSyntaxObject implements IBinaryOperator {
+  override readonly metaClass: string = "BinaryOperator";
+}
+
+// ─── 105. UnaryOperator (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.UnaryOperator
+ * @metaclass UnaryOperator (abstract)
+ * @generalization MinorSyntaxObject
+ * @definition Operators taking a single operand
+ * @note §8.2.1.5.8 prose: "The inner class UnaryOperator is a subclass
+ *   of OtherSyntaxObject, and has primitive terminal subclasses UnaryPlus,
+ *   UnaryMinus, Not, BitNot, AddressOf, Deref, Increment, Decrement,
+ *   PostIncrement, PostDecrement." PDF places UnaryOperator under
+ *   MinorSyntaxObject ("OtherSyntaxObject" prose synonym). EMOF places
+ *   its xmi:id under the Expression package
+ *   (`ASTMCore.ASTMSyntax.Expression.UnaryOperator`) with
+ *   `superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"`. EMOF marks
+ *   it `isAbstract="true"`.
+ * @ownedAttributes (none -- UnaryOperator is a structural marker; the
+ *   operator identity is carried by the concrete leaf metaclass)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IUnaryOperator extends IMinorSyntaxObject {
+  // structural marker — concrete subclasses carry the operator identity via
+  // their `metaClass` discriminator.
+}
+
+export abstract class UnaryOperator extends MinorSyntaxObject implements IUnaryOperator {
+  override readonly metaClass: string = "UnaryOperator";
+}
+
+// ─── 106. ActualParameter (§8.2.1.5.9.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.5
+ * @xmiId ASTMCore.ASTMSyntax.Expression.ActualParameter
+ * @metaclass ActualParameter (abstract)
+ * @generalization MinorSyntaxObject
+ * @definition Actual parameters
+ * @note §8.2.1.5.9.5 prose: "ActualParameter is subclass of
+ *   MinorSyntaxObject used for denoting actual parameters, and has two
+ *   subclasses ActualParameterExpression and MissingActualParameter."
+ *   EMOF places its xmi:id under the Expression package
+ *   (`ASTMCore.ASTMSyntax.Expression.ActualParameter`) with
+ *   `superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"`. EMOF marks
+ *   it `isAbstract="true"`.
+ * @ownedAttributes (none -- ActualParameter is a structural marker; the
+ *   parameter shape is carried by the concrete leaf metaclass)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IActualParameter extends IMinorSyntaxObject {
+  // structural marker — concrete subclasses (ActualParameterExpression,
+  // MissingActualParameter) carry the parameter shape.
+}
+
+export abstract class ActualParameter extends MinorSyntaxObject implements IActualParameter {
+  override readonly metaClass: string = "ActualParameter";
+}
+
+// ─── 107. Literal (§8.2.1.4.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.1
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Literal
+ * @metaclass Literal (concrete)
+ * @generalization Expression
+ * @definition Literal expressions
+ * @note §8.2.1.4.1 prose: "The inner class Literal is a subclass of
+ *   Expression, and has unary association value to String and subclasses
+ *   IntegerLiteral, StringLiteral, CharLiteral, RealLiteral,
+ *   BooleanLiteral, BitLiteral, and EnumLiteral." EMOF does NOT mark
+ *   Literal as `isAbstract="true"`, so it is concrete under EMOF
+ *   defaulting — the seven Literal leaves specialise it but Literal
+ *   itself is instantiable to carry an as-yet-unclassified token.
+ * @ownedAttributes
+ *   • value : String [1..1] -- §8.2.1.4.1: unary property value to primitive String. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ILiteral extends IExpression {
+  readonly value: string;
+}
+
+export class Literal extends Expression implements ILiteral {
+  override readonly metaClass: string = "Literal";
+  readonly value: string;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    value: string;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.value = args.value;
+  }
+}
+
+// ─── 108. AnnotationExpression (§8.2.1.4.10) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.10
+ * @xmiId ASTMCore.ASTMSyntax.Expression.AnnotationExpression
+ * @metaclass AnnotationExpression (concrete)
+ * @generalization Expression
+ * @definition Expressions that supply annotations for other elements
+ * @note §8.2.1.4.10 prose: "AnnotationExpression is a subclass of
+ *   Expression and has unary association annotationType to TypeReference
+ *   and zero to any association memberValues to Expression." Footnotes:
+ *   (2) "The AnnotationExpression is used for depicting EGL-style
+ *   annotations." (3) "Annotation Type is optional. This is to allow
+ *   attribute-value pairs (i.e., Member Values) to allow default values
+ *   for members." EMOF spells the first attribute `annotationtype`
+ *   (lowercase 't') and declares `lower="1"` — i.e., mandatory in EMOF
+ *   despite PDF prose marking it optional. We honour EMOF: spelling
+ *   `annotationtype`, cardinality [1..1].
+ * @ownedAttributes
+ *   • annotationtype : TypeReference [1..1] -- §8.2.1.4.10: unary association annotationType to TypeReference (EMOF spelling: lowercase 't'). EMOF lower="1".
+ *   • memberValues   : Expression    [1..*] -- §8.2.1.4.10: one to any association memberValues to Expression. EMOF lower="1" upper="*".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IAnnotationExpression extends IExpression {
+  readonly annotationtype: ITypeReference;
+  readonly memberValues: ReadonlyArray<IExpression>;
+}
+
+export class AnnotationExpression extends Expression implements IAnnotationExpression {
+  override readonly metaClass: string = "AnnotationExpression";
+  readonly annotationtype: ITypeReference;
+  readonly memberValues: ReadonlyArray<IExpression>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    annotationtype: ITypeReference;
+    memberValues: ReadonlyArray<IExpression>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.annotationtype = args.annotationtype;
+    this.memberValues = args.memberValues;
+  }
+}
+
+// ─── 109. ArrayAccess (§8.2.1.4.13) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.13
+ * @xmiId ASTMCore.ASTMSyntax.Expression.ArrayAccess
+ * @metaclass ArrayAccess (concrete)
+ * @generalization Expression
+ * @definition References to individual array elements
+ * @note §8.2.1.4.13 prose: "ArrayAccess is a subclass of Expression with
+ *   unary association ArrayName to class Expression and one to many
+ *   association Subscripts to Expression." The §8.2.1.4.9 sibling
+ *   `ArrayReference` block at lines 4648-4661 of the spec text describes
+ *   the same structure — it is the PDF's earlier name for ArrayAccess.
+ *   EMOF spells the second attribute `subScripts` (capital 'S'); PDF
+ *   spells it `subscripts`. We honour EMOF.
+ * @ownedAttributes
+ *   • arrayName : Expression [1..1] -- §8.2.1.4.13: unary association arrayName to Expression. EMOF lower="1".
+ *   • subScripts: Expression [1..*] -- §8.2.1.4.13: one to many association subScripts to Expression (EMOF spelling: capital 'S'). EMOF lower="1" upper="*".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IArrayAccess extends IExpression {
+  readonly arrayName: IExpression;
+  readonly subScripts: ReadonlyArray<IExpression>;
+}
+
+export class ArrayAccess extends Expression implements IArrayAccess {
+  override readonly metaClass: string = "ArrayAccess";
+  readonly arrayName: IExpression;
+  readonly subScripts: ReadonlyArray<IExpression>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    arrayName: IExpression;
+    subScripts: ReadonlyArray<IExpression>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.arrayName = args.arrayName;
+    this.subScripts = args.subScripts;
+  }
+}
+
+// ─── 110. BinaryExpression (§8.2.1.4.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.5
+ * @xmiId ASTMCore.ASTMSyntax.Expression.BinaryExpression
+ * @metaclass BinaryExpression (concrete)
+ * @generalization Expression
+ * @definition Expressions involving binary operators
+ * @note §8.2.1.4.5 prose: "The interior class BinaryExpression is a
+ *   subclass of Expression, and has unary association leftOperand and
+ *   unary association rightOperand to the class Expression and unary
+ *   association operator to the terminal primitive class BinaryOperatory."
+ *   PDF typo: `BinaryOperatory` should read `BinaryOperator`. EMOF types
+ *   the attribute to `BinaryOperator`.
+ * @ownedAttributes
+ *   • operator     : BinaryOperator [1..1] -- §8.2.1.4.5: unary association operator to BinaryOperator. EMOF lower="1".
+ *   • leftOperand  : Expression     [1..1] -- §8.2.1.4.5: unary association leftOperand to Expression. EMOF lower="1".
+ *   • rightOperand : Expression     [1..1] -- §8.2.1.4.5: unary association rightOperand to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBinaryExpression extends IExpression {
+  readonly operator: IBinaryOperator;
+  readonly leftOperand: IExpression;
+  readonly rightOperand: IExpression;
+}
+
+export class BinaryExpression extends Expression implements IBinaryExpression {
+  override readonly metaClass: string = "BinaryExpression";
+  readonly operator: IBinaryOperator;
+  readonly leftOperand: IExpression;
+  readonly rightOperand: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    operator: IBinaryOperator;
+    leftOperand: IExpression;
+    rightOperand: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.operator = args.operator;
+    this.leftOperand = args.leftOperand;
+    this.rightOperand = args.rightOperand;
+  }
+}
+
+// ─── 111. UnaryExpression (§8.2.1.4.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.4
+ * @xmiId ASTMCore.ASTMSyntax.Expression.UnaryExpression
+ * @metaclass UnaryExpression (concrete)
+ * @generalization Expression
+ * @definition Expressions involving unary operators
+ * @note §8.2.1.4.4 prose: "The interior class UnaryExpression is a
+ *   subclass of Expression, and has unary association operand to the
+ *   class Expression and unary association operator to class
+ *   UnaryOperatory." PDF typo: `UnaryOperatory` should read
+ *   `UnaryOperator`. EMOF types the attribute to `UnaryOperator`.
+ * @ownedAttributes
+ *   • operator : UnaryOperator [1..1] -- §8.2.1.4.4: unary association operator to UnaryOperator. EMOF lower="1".
+ *   • operand  : Expression    [1..1] -- §8.2.1.4.4: unary association operand to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IUnaryExpression extends IExpression {
+  readonly operator: IUnaryOperator;
+  readonly operand: IExpression;
+}
+
+export class UnaryExpression extends Expression implements IUnaryExpression {
+  override readonly metaClass: string = "UnaryExpression";
+  readonly operator: IUnaryOperator;
+  readonly operand: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    operator: IUnaryOperator;
+    operand: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.operator = args.operator;
+    this.operand = args.operand;
+  }
+}
+
+// ─── 112. CastExpression (§8.2.1.4.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.2
+ * @xmiId ASTMCore.ASTMSyntax.Expression.CastExpression
+ * @metaclass CastExpression (concrete)
+ * @generalization Expression
+ * @definition Expressions that are cast to a specified type
+ * @note §8.2.1.4.2 prose: "The class CastExpression is a subclass of
+ *   Expression, and has unary association castType to TypeReference, and
+ *   unary association expression to the class Expression."
+ * @ownedAttributes
+ *   • castType   : TypeReference [1..1] -- §8.2.1.4.2: unary association castType to TypeReference. EMOF lower="1".
+ *   • expression : Expression    [1..1] -- §8.2.1.4.2: unary association expression to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ICastExpression extends IExpression {
+  readonly castType: ITypeReference;
+  readonly expression: IExpression;
+}
+
+export class CastExpression extends Expression implements ICastExpression {
+  override readonly metaClass: string = "CastExpression";
+  readonly castType: ITypeReference;
+  readonly expression: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    castType: ITypeReference;
+    expression: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.castType = args.castType;
+    this.expression = args.expression;
+  }
+}
+
+// ─── 113. ConditionalExpression (§8.2.1.4.6) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.6
+ * @xmiId ASTMCore.ASTMSyntax.Expression.ConditionalExpression
+ * @metaclass ConditionalExpression (concrete)
+ * @generalization Expression
+ * @definition Ternary conditional expressions
+ * @note §8.2.1.4.6 prose: "The class ConditionalExpression is a subclass
+ *   of Expression, and has unary association condition, unary
+ *   onFalseOperand and unary association onTrueOperand to the class
+ *   Expression." PDF heading writes "Conditional Expression" (with
+ *   space) while the class identifier is `ConditionalExpression`.
+ *   Semantics (§8.2.1.4.6): "ConditionalExpression has short-circuit
+ *   semantics. This implies that the onTrueOperand is evaluated only if
+ *   the condition is TRUE, and onFalseOperand is evaluated only if the
+ *   condition is FALSE."
+ * @ownedAttributes
+ *   • condition      : Expression [1..1] -- §8.2.1.4.6: unary association condition to Expression. EMOF lower="1".
+ *   • onTrueOperand  : Expression [1..1] -- §8.2.1.4.6: unary association onTrueOperand to Expression. EMOF lower="1".
+ *   • onFalseOperand : Expression [1..1] -- §8.2.1.4.6: unary association onFalseOperand to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IConditionalExpression extends IExpression {
+  readonly condition: IExpression;
+  readonly onTrueOperand: IExpression;
+  readonly onFalseOperand: IExpression;
+}
+
+export class ConditionalExpression extends Expression implements IConditionalExpression {
+  override readonly metaClass: string = "ConditionalExpression";
+  readonly condition: IExpression;
+  readonly onTrueOperand: IExpression;
+  readonly onFalseOperand: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    condition: IExpression;
+    onTrueOperand: IExpression;
+    onFalseOperand: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.condition = args.condition;
+    this.onTrueOperand = args.onTrueOperand;
+    this.onFalseOperand = args.onFalseOperand;
+  }
+}
+
+// ─── 114. FunctionCallExpression (§8.2.1.4.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.FunctionCallExpression
+ * @metaclass FunctionCallExpression (concrete)
+ * @generalization Expression
+ * @definition Function calls
+ * @note §8.2.1.4.8 prose: "The interior class FunctionCallExpression is
+ *   a subclass of Expression, and has any number of associations of
+ *   actualParams to the class ActualParameter, and unary association
+ *   calledFunction to the class Expression." EMOF declares
+ *   `actualParams` with `lower="1"` (one-or-more), tighter than PDF's
+ *   "any number". We honour EMOF.
+ * @ownedAttributes
+ *   • calledFunction : Expression      [1..1] -- §8.2.1.4.8: unary association calledFunction to Expression. EMOF lower="1".
+ *   • actualParams   : ActualParameter [1..*] -- §8.2.1.4.8: one-or-more associations actualParams to ActualParameter. EMOF lower="1" upper="*".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IFunctionCallExpression extends IExpression {
+  readonly calledFunction: IExpression;
+  readonly actualParams: ReadonlyArray<IActualParameter>;
+}
+
+export class FunctionCallExpression extends Expression implements IFunctionCallExpression {
+  override readonly metaClass: string = "FunctionCallExpression";
+  readonly calledFunction: IExpression;
+  readonly actualParams: ReadonlyArray<IActualParameter>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    calledFunction: IExpression;
+    actualParams: ReadonlyArray<IActualParameter>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.calledFunction = args.calledFunction;
+    this.actualParams = args.actualParams;
+  }
+}
+
+// ─── 115. NewExpression (§8.2.1.4.8 / unlabelled subsection) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.NewExpression
+ * @metaclass NewExpression (concrete)
+ * @generalization Expression
+ * @definition Instance creation expressions
+ * @note §8.2.1.4 (unlabelled NewExpression subsection, immediately
+ *   following §8.2.1.4.8 FunctionCallExpression) prose: "The class
+ *   NewExpression has unary association newType to the class
+ *   TypeReference, and zero to any number association actualParams to
+ *   ActualParameter." The PDF spec omits a `§` heading for
+ *   NewExpression; we tag it under §8.2.1.4.8 by virtue of its
+ *   adjacency to FunctionCallExpression. EMOF declares `actualParams`
+ *   with `lower="1"` (one-or-more), tighter than PDF's "zero to any".
+ *   We honour EMOF.
+ * @ownedAttributes
+ *   • newType      : TypeReference   [1..1] -- §8.2.1.4.8: unary association newType to TypeReference. EMOF lower="1".
+ *   • actualParams : ActualParameter [1..*] -- §8.2.1.4.8: one-or-more associations actualParams to ActualParameter (EMOF lower="1" upper="*"; PDF: zero-or-more).
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface INewExpression extends IExpression {
+  readonly newType: ITypeReference;
+  readonly actualParams: ReadonlyArray<IActualParameter>;
+}
+
+export class NewExpression extends Expression implements INewExpression {
+  override readonly metaClass: string = "NewExpression";
+  readonly newType: ITypeReference;
+  readonly actualParams: ReadonlyArray<IActualParameter>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    newType: ITypeReference;
+    actualParams: ReadonlyArray<IActualParameter>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.newType = args.newType;
+    this.actualParams = args.actualParams;
+  }
+}
+
+// ─── 116. RangeExpression (§8.2.1.4.7) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.7
+ * @xmiId ASTMCore.ASTMSyntax.Expression.RangeExpression
+ * @metaclass RangeExpression (concrete)
+ * @generalization Expression
+ * @definition Expressions consisting of a range of values
+ * @note §8.2.1.4.7 prose: "The interior class RangeExpression, is a
+ *   subclass of Expression, and has unary association fromExpression
+ *   and the unary association toExpression to the interior class
+ *   Expression."
+ * @ownedAttributes
+ *   • fromExpression : Expression [1..1] -- §8.2.1.4.7: unary association fromExpression to Expression. EMOF lower="1".
+ *   • toExpression   : Expression [1..1] -- §8.2.1.4.7: unary association toExpression to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRangeExpression extends IExpression {
+  readonly fromExpression: IExpression;
+  readonly toExpression: IExpression;
+}
+
+export class RangeExpression extends Expression implements IRangeExpression {
+  override readonly metaClass: string = "RangeExpression";
+  readonly fromExpression: IExpression;
+  readonly toExpression: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    fromExpression: IExpression;
+    toExpression: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.fromExpression = args.fromExpression;
+    this.toExpression = args.toExpression;
+  }
+}
+
+// ─── 117. AggregateExpression (§8.2.1.4.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.3
+ * @xmiId ASTMCore.ASTMSyntax.Expression.AggregateExpression
+ * @metaclass AggregateExpression (concrete)
+ * @generalization Expression
+ * @definition Expressions consisting of a list of subexpressions
+ * @note §8.2.1.4.3 prose: "The AggregateExpression is a subclass of
+ *   Expression, has no associations, properties or subclasses." Despite
+ *   the definition mentioning "a list of subexpressions", EMOF declares
+ *   AggregateExpression with ZERO own ownedAttribute elements — the
+ *   list is not surfaced structurally. CollectionExpression is the
+ *   sibling concrete class that does carry an `expressionList`. The
+ *   AggregateExpression vs CollectionExpression split appears to be a
+ *   forward-compatible vestige of an earlier ASTM design.
+ * @ownedAttributes (none -- AggregateExpression has no own ownedAttribute in EMOF; structure inherited from Expression)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IAggregateExpression extends IExpression {
+  // terminal — no further structural members.
+}
+
+export class AggregateExpression extends Expression implements IAggregateExpression {
+  override readonly metaClass = "AggregateExpression" as const;
+}
+
+// ─── 118. CollectionExpression (§8.2.1.4.11) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.11
+ * @xmiId ASTMCore.ASTMSyntax.Expression.CollectionExpression
+ * @metaclass CollectionExpression (concrete)
+ * @generalization Expression
+ * @definition Expressions that are collections of other expressions
+ * @note §8.2.1.4.11 prose: "CollectionExpression is a subclass of
+ *   Expression and has one to many association expressionList to
+ *   Expression." EMOF declares `expressionList` with `lower="1"
+ *   upper="*"` consistent with PDF "one to many".
+ * @ownedAttributes
+ *   • expressionList : Expression [1..*] -- §8.2.1.4.11: one to many association expressionList to Expression. EMOF lower="1" upper="*".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ICollectionExpression extends IExpression {
+  readonly expressionList: ReadonlyArray<IExpression>;
+}
+
+export class CollectionExpression extends Expression implements ICollectionExpression {
+  override readonly metaClass: string = "CollectionExpression";
+  readonly expressionList: ReadonlyArray<IExpression>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    expressionList: ReadonlyArray<IExpression>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.expressionList = args.expressionList;
+  }
+}
+
+// ─── 119. LabelAccess (§8.2.1.4.12) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.12
+ * @xmiId ASTMCore.ASTMSyntax.Expression.LabelAccess
+ * @metaclass LabelAccess (concrete)
+ * @generalization Expression
+ * @definition Reference to a label
+ * @note §8.2.1.4.12 prose: "LabelAccess is a subclass of Expression with
+ *   unary association labelDefinition to class LabelDefinition and
+ *   unary association labelName to class Name."
+ * @ownedAttributes
+ *   • labelName       : Name            [1..1] -- §8.2.1.4.12: unary association labelName to Name. EMOF lower="1".
+ *   • labelDefinition : LabelDefinition [1..1] -- §8.2.1.4.12: unary association labelDefinition to LabelDefinition. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ILabelAccess extends IExpression {
+  readonly labelName: IName;
+  readonly labelDefinition: ILabelDefinition;
+}
+
+export class LabelAccess extends Expression implements ILabelAccess {
+  override readonly metaClass: string = "LabelAccess";
+  readonly labelName: IName;
+  readonly labelDefinition: ILabelDefinition;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    labelName: IName;
+    labelDefinition: ILabelDefinition;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.labelName = args.labelName;
+    this.labelDefinition = args.labelDefinition;
+  }
+}
+
+// ─── 120. BitLiteral (§8.2.1.4.1.6) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.1.6
+ * @xmiId ASTMCore.ASTMSyntax.Expression.BitLiteral
+ * @metaclass BitLiteral (concrete)
+ * @generalization Literal
+ * @definition Binary literals
+ * @note §8.2.1.4.1.6 prose: "The class BitLiteral is a subclass of Literal."
+ *   (PDF §§8.2.1.4.1.2-8.2.1.4.1.6 mistakenly write "The class
+ *   IntegerLiteral is a subclass of Literal" for ALL six leaves —
+ *   a copy-paste typo in the OMG PDF. EMOF declares each leaf
+  *   with `superClass="ASTMCore.ASTMSyntax.Expression.Literal"` and
+  *   `name="BitLiteral"`. The value carrier is inherited from Literal.")
+ * @ownedAttributes (none -- value carrier inherited from Literal)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBitLiteral extends ILiteral {
+  // terminal — no further structural members.
+}
+
+export class BitLiteral extends Literal implements IBitLiteral {
+  override readonly metaClass = "BitLiteral" as const;
+}
+
+// ─── 121. BooleanLiteral (§8.2.1.4.1.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.1.5
+ * @xmiId ASTMCore.ASTMSyntax.Expression.BooleanLiteral
+ * @metaclass BooleanLiteral (concrete)
+ * @generalization Literal
+ * @definition Boolean literals
+ * @note §8.2.1.4.1.5 prose: "The class BooleanLiteral is a subclass of Literal."
+ *   (PDF §§8.2.1.4.1.2-8.2.1.4.1.6 mistakenly write "The class
+ *   IntegerLiteral is a subclass of Literal" for ALL six leaves —
+ *   a copy-paste typo in the OMG PDF. EMOF declares each leaf
+  *   with `superClass="ASTMCore.ASTMSyntax.Expression.Literal"` and
+  *   `name="BooleanLiteral"`. The value carrier is inherited from Literal.")
+ * @ownedAttributes (none -- value carrier inherited from Literal)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBooleanLiteral extends ILiteral {
+  // terminal — no further structural members.
+}
+
+export class BooleanLiteral extends Literal implements IBooleanLiteral {
+  override readonly metaClass = "BooleanLiteral" as const;
+}
+
+// ─── 122. CharLiteral (§8.2.1.4.1.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.1.3
+ * @xmiId ASTMCore.ASTMSyntax.Expression.CharLiteral
+ * @metaclass CharLiteral (concrete)
+ * @generalization Literal
+ * @definition Character literals
+ * @note §8.2.1.4.1.3 prose: "The class CharLiteral is a subclass of Literal."
+ *   (PDF §§8.2.1.4.1.2-8.2.1.4.1.6 mistakenly write "The class
+ *   IntegerLiteral is a subclass of Literal" for ALL six leaves —
+ *   a copy-paste typo in the OMG PDF. EMOF declares each leaf
+  *   with `superClass="ASTMCore.ASTMSyntax.Expression.Literal"` and
+  *   `name="CharLiteral"`. The value carrier is inherited from Literal.")
+ * @ownedAttributes (none -- value carrier inherited from Literal)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ICharLiteral extends ILiteral {
+  // terminal — no further structural members.
+}
+
+export class CharLiteral extends Literal implements ICharLiteral {
+  override readonly metaClass = "CharLiteral" as const;
+}
+
+// ─── 123. EnumLiteral (§8.2.1.4.1.7) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.1.7
+ * @xmiId ASTMCore.ASTMSyntax.Expression.EnumLiteral
+ * @metaclass EnumLiteral (concrete)
+ * @generalization Literal
+ * @definition Enumeration literals
+ * @note §8.2.1.4.1.7 prose: "The class EnumLiteral is a subclass of Literal."
+ *   (PDF §§8.2.1.4.1.2-8.2.1.4.1.6 mistakenly write "The class
+ *   IntegerLiteral is a subclass of Literal" for ALL six leaves —
+ *   a copy-paste typo in the OMG PDF. EMOF declares each leaf
+  *   with `superClass="ASTMCore.ASTMSyntax.Expression.Literal"` and
+  *   `name="EnumLiteral"`. The value carrier is inherited from Literal.")
+ * @ownedAttributes (none -- value carrier inherited from Literal)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IEnumLiteral extends ILiteral {
+  // terminal — no further structural members.
+}
+
+export class EnumLiteral extends Literal implements IEnumLiteral {
+  override readonly metaClass = "EnumLiteral" as const;
+}
+
+// ─── 124. IntegerLiteral (§8.2.1.4.1.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.1.1
+ * @xmiId ASTMCore.ASTMSyntax.Expression.IntegerLiteral
+ * @metaclass IntegerLiteral (concrete)
+ * @generalization Literal
+ * @definition Integer literals
+ * @note §8.2.1.4.1.1 prose: "The class IntegerLiteral is a subclass of Literal."
+ *   (PDF §§8.2.1.4.1.2-8.2.1.4.1.6 mistakenly write "The class
+ *   IntegerLiteral is a subclass of Literal" for ALL six leaves —
+ *   a copy-paste typo in the OMG PDF. EMOF declares each leaf
+  *   with `superClass="ASTMCore.ASTMSyntax.Expression.Literal"` and
+  *   `name="IntegerLiteral"`. The value carrier is inherited from Literal.")
+ * @ownedAttributes (none -- value carrier inherited from Literal)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IIntegerLiteral extends ILiteral {
+  // terminal — no further structural members.
+}
+
+export class IntegerLiteral extends Literal implements IIntegerLiteral {
+  override readonly metaClass = "IntegerLiteral" as const;
+}
+
+// ─── 125. RealLiteral (§8.2.1.4.1.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.1.4
+ * @xmiId ASTMCore.ASTMSyntax.Expression.RealLiteral
+ * @metaclass RealLiteral (concrete)
+ * @generalization Literal
+ * @definition Floating-point Literals
+ * @note §8.2.1.4.1.4 prose: "The class RealLiteral is a subclass of Literal."
+ *   (PDF §§8.2.1.4.1.2-8.2.1.4.1.6 mistakenly write "The class
+ *   IntegerLiteral is a subclass of Literal" for ALL six leaves —
+ *   a copy-paste typo in the OMG PDF. EMOF declares each leaf
+  *   with `superClass="ASTMCore.ASTMSyntax.Expression.Literal"` and
+  *   `name="RealLiteral"`. The value carrier is inherited from Literal.")
+ * @ownedAttributes (none -- value carrier inherited from Literal)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRealLiteral extends ILiteral {
+  // terminal — no further structural members.
+}
+
+export class RealLiteral extends Literal implements IRealLiteral {
+  override readonly metaClass = "RealLiteral" as const;
+}
+
+// ─── 126. StringLiteral (§8.2.1.4.1.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.1.2
+ * @xmiId ASTMCore.ASTMSyntax.Expression.StringLiteral
+ * @metaclass StringLiteral (concrete)
+ * @generalization Literal
+ * @definition String literals
+ * @note §8.2.1.4.1.2 prose: "The class StringLiteral is a subclass of Literal."
+ *   (PDF §§8.2.1.4.1.2-8.2.1.4.1.6 mistakenly write "The class
+ *   IntegerLiteral is a subclass of Literal" for ALL six leaves —
+ *   a copy-paste typo in the OMG PDF. EMOF declares each leaf
+  *   with `superClass="ASTMCore.ASTMSyntax.Expression.Literal"` and
+  *   `name="StringLiteral"`. The value carrier is inherited from Literal.")
+ * @ownedAttributes (none -- value carrier inherited from Literal)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IStringLiteral extends ILiteral {
+  // terminal — no further structural members.
+}
+
+export class StringLiteral extends Literal implements IStringLiteral {
+  override readonly metaClass = "StringLiteral" as const;
+}
+
+// ─── 127. IdentifierReference (§8.2.1.4.11.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.11.1
+ * @xmiId ASTMCore.ASTMSyntax.Expression.IdentifierReference
+ * @metaclass IdentifierReference (concrete)
+ * @generalization NameReference
+ * @definition References to simply-named (unqualified) entities
+ * @note §8.2.1.4.11.1 prose: "The interior class IdentifierReference is
+ *   a subclass of NameReference, and has any number of association
+ *   Qualifiers to interior class NamedType and unary semantic association
+ *   RefersTo to the inner class DeclarationOrDefinition." PDF prose
+ *   describes own `Qualifiers` and `RefersTo` associations, but EMOF
+ *   declares IdentifierReference with ZERO own ownedAttribute elements
+ *   — its `identifierName` and `refersTo` are inherited from
+ *   NameReference. PDF prose appears to redundantly describe the
+ *   inherited `refersTo` and confuse `qualifiers` (which is
+ *   QualifiedIdentifierReference's attribute, not IdentifierReference's).
+ *   We honour EMOF.
+ * @ownedAttributes (none -- identifierName / refersTo inherited from NameReference)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IIdentifierReference extends INameReference {
+  // terminal — no further structural members.
+}
+
+export class IdentifierReference extends NameReference implements IIdentifierReference {
+  override readonly metaClass = "IdentifierReference" as const;
+}
+
+// ─── 128. TypeQualifiedIdentifierReference (§8.2.1.4.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.TypeQualifiedIdentifierReference
+ * @metaclass TypeQualifiedIdentifierReference (concrete)
+ * @generalization NameReference
+ * @definition References to entities qualified by type (e.g., Java's
+ *   `Outer.Inner` static-member access pattern)
+ * @note §8.2.1.4.9 hierarchy block lists TypeQualifiedIdentifierReference
+ *   as a NameReference subclass but the PDF provides no dedicated
+ *   subsection-heading or `Definition:` line for it. The definition
+ *   here is inferred from the metaclass name and the structural
+ *   `aggregateType : TypeReference [*] + member : IdentifierReference`
+ *   shape EMOF declares — i.e., a name reference qualified by a Type
+ *   rather than a value. EMOF declares `aggregateType` with `lower="1"
+ *   upper="*"` (one-or-more), suggesting nested type qualification.
+ * @ownedAttributes
+ *   • aggregateType : TypeReference       [1..*] -- §8.2.1.4.9: one-or-more association aggregateType to TypeReference. EMOF lower="1" upper="*".
+ *   • member        : IdentifierReference [1..1] -- §8.2.1.4.9: unary association member to IdentifierReference. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ITypeQualifiedIdentifierReference extends INameReference {
+  readonly aggregateType: ReadonlyArray<ITypeReference>;
+  readonly member: IIdentifierReference;
+}
+
+export class TypeQualifiedIdentifierReference extends NameReference implements ITypeQualifiedIdentifierReference {
+  override readonly metaClass = "TypeQualifiedIdentifierReference" as const;
+  readonly aggregateType: ReadonlyArray<ITypeReference>;
+  readonly member: IIdentifierReference;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    identifierName: IName;
+    refersTo: IDefintionObject;
+    aggregateType: ReadonlyArray<ITypeReference>;
+    member: IIdentifierReference;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      identifierName: args.identifierName,
+      refersTo: args.refersTo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.aggregateType = args.aggregateType;
+    this.member = args.member;
+  }
+}
+
+// ─── 129. QualifiedOverData (§8.2.1.4.11.2.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.11.2.2
+ * @xmiId ASTMCore.ASTMSyntax.Expression.QualifiedOverData
+ * @metaclass QualifiedOverData (concrete)
+ * @generalization QualifiedIdentifierReference
+ * @definition References to entities with qualified names where the qualifying portion of the name is not a pointer value
+ * @note §8.2.1.4.11.2.2 prose: "QualifiedOverData is a subclass of the class QualifiedIdentifierReference."
+ * @ownedAttributes (none -- qualifiers / member inherited from QualifiedIdentifierReference)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IQualifiedOverData extends IQualifiedIdentifierReference {
+  // terminal — no further structural members.
+}
+
+export class QualifiedOverData extends QualifiedIdentifierReference implements IQualifiedOverData {
+  override readonly metaClass = "QualifiedOverData" as const;
+}
+
+// ─── 130. QualifiedOverPtr (§8.2.1.4.11.2.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.11.2.1
+ * @xmiId ASTMCore.ASTMSyntax.Expression.QualifiedOverPtr
+ * @metaclass QualifiedOverPtr (concrete)
+ * @generalization QualifiedIdentifierReference
+ * @definition References to entities with qualified names where the qualifying portion of the name is a pointer value
+ * @note §8.2.1.4.11.2.1 prose: "QualifiedOverPtr is a subclass of the class QualifiedIdentifierReference. PDF heading writes "QualifiedOverPointer" but the hierarchy block, prose, and EMOF all use `QualifiedOverPtr` (abbreviated)."
+ * @ownedAttributes (none -- qualifiers / member inherited from QualifiedIdentifierReference)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IQualifiedOverPtr extends IQualifiedIdentifierReference {
+  // terminal — no further structural members.
+}
+
+export class QualifiedOverPtr extends QualifiedIdentifierReference implements IQualifiedOverPtr {
+  override readonly metaClass = "QualifiedOverPtr" as const;
+}
+
+// ─── 131. Add (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Add
+ * @metaclass Add (concrete)
+ * @generalization BinaryOperator
+ * @definition Addition operator
+ * @note §8.2.1.5.9 lists Add as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IAdd extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Add extends BinaryOperator implements IAdd {
+  override readonly metaClass = "Add" as const;
+}
+
+// ─── 132. And (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.And
+ * @metaclass And (concrete)
+ * @generalization BinaryOperator
+ * @definition Logical conjunction operator
+ * @note §8.2.1.5.9 lists And as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IAnd extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class And extends BinaryOperator implements IAnd {
+  override readonly metaClass = "And" as const;
+}
+
+// ─── 133. Assign (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Assign
+ * @metaclass Assign (concrete)
+ * @generalization BinaryOperator
+ * @definition Assignment operator
+ * @note §8.2.1.5.9 lists Assign as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IAssign extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Assign extends BinaryOperator implements IAssign {
+  override readonly metaClass = "Assign" as const;
+}
+
+// ─── 134. BitAnd (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.BitAnd
+ * @metaclass BitAnd (concrete)
+ * @generalization BinaryOperator
+ * @definition Bitwise conjunction operator
+ * @note §8.2.1.5.9 lists BitAnd as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBitAnd extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class BitAnd extends BinaryOperator implements IBitAnd {
+  override readonly metaClass = "BitAnd" as const;
+}
+
+// ─── 135. BitLeftShift (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.BitLeftShift
+ * @metaclass BitLeftShift (concrete)
+ * @generalization BinaryOperator
+ * @definition Bitwise left-shift operator
+ * @note §8.2.1.5.9 lists BitLeftShift as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBitLeftShift extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class BitLeftShift extends BinaryOperator implements IBitLeftShift {
+  override readonly metaClass = "BitLeftShift" as const;
+}
+
+// ─── 136. BitOr (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.BitOr
+ * @metaclass BitOr (concrete)
+ * @generalization BinaryOperator
+ * @definition Bitwise disjunction operator
+ * @note §8.2.1.5.9 lists BitOr as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBitOr extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class BitOr extends BinaryOperator implements IBitOr {
+  override readonly metaClass = "BitOr" as const;
+}
+
+// ─── 137. BitRightShift (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.BitRightShift
+ * @metaclass BitRightShift (concrete)
+ * @generalization BinaryOperator
+ * @definition Bitwise right-shift operator
+ * @note §8.2.1.5.9 lists BitRightShift as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBitRightShift extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class BitRightShift extends BinaryOperator implements IBitRightShift {
+  override readonly metaClass = "BitRightShift" as const;
+}
+
+// ─── 138. BitXor (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.BitXor
+ * @metaclass BitXor (concrete)
+ * @generalization BinaryOperator
+ * @definition Bitwise exclusive-or operator
+ * @note §8.2.1.5.9 lists BitXor as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBitXor extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class BitXor extends BinaryOperator implements IBitXor {
+  override readonly metaClass = "BitXor" as const;
+}
+
+// ─── 139. Divide (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Divide
+ * @metaclass Divide (concrete)
+ * @generalization BinaryOperator
+ * @definition Division operator
+ * @note §8.2.1.5.9 lists Divide as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDivide extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Divide extends BinaryOperator implements IDivide {
+  override readonly metaClass = "Divide" as const;
+}
+
+// ─── 140. Equal (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Equal
+ * @metaclass Equal (concrete)
+ * @generalization BinaryOperator
+ * @definition Equality operator
+ * @note §8.2.1.5.9 lists Equal as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IEqual extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Equal extends BinaryOperator implements IEqual {
+  override readonly metaClass = "Equal" as const;
+}
+
+// ─── 141. Exponent (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Exponent
+ * @metaclass Exponent (concrete)
+ * @generalization BinaryOperator
+ * @definition Exponentiation operator
+ * @note §8.2.1.5.9 lists Exponent as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IExponent extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Exponent extends BinaryOperator implements IExponent {
+  override readonly metaClass = "Exponent" as const;
+}
+
+// ─── 142. Greater (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Greater
+ * @metaclass Greater (concrete)
+ * @generalization BinaryOperator
+ * @definition Relational operator in which the result is true iff the left operand is greater than the right operand
+ * @note §8.2.1.5.9 lists Greater as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IGreater extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Greater extends BinaryOperator implements IGreater {
+  override readonly metaClass = "Greater" as const;
+}
+
+// ─── 143. Less (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Less
+ * @metaclass Less (concrete)
+ * @generalization BinaryOperator
+ * @definition Relational operator in which the result is true iff the left operand is less than the right operand
+ * @note §8.2.1.5.9 lists Less as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ILess extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Less extends BinaryOperator implements ILess {
+  override readonly metaClass = "Less" as const;
+}
+
+// ─── 144. Modulus (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Modulus
+ * @metaclass Modulus (concrete)
+ * @generalization BinaryOperator
+ * @definition Modulo operator
+ * @note §8.2.1.5.9 lists Modulus as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IModulus extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Modulus extends BinaryOperator implements IModulus {
+  override readonly metaClass = "Modulus" as const;
+}
+
+// ─── 145. Multiply (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Multiply
+ * @metaclass Multiply (concrete)
+ * @generalization BinaryOperator
+ * @definition Multiplication operator
+ * @note §8.2.1.5.9 lists Multiply as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IMultiply extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Multiply extends BinaryOperator implements IMultiply {
+  override readonly metaClass = "Multiply" as const;
+}
+
+// ─── 146. NotEqual (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.NotEqual
+ * @metaclass NotEqual (concrete)
+ * @generalization BinaryOperator
+ * @definition Inequality operator
+ * @note §8.2.1.5.9 lists NotEqual as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface INotEqual extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class NotEqual extends BinaryOperator implements INotEqual {
+  override readonly metaClass = "NotEqual" as const;
+}
+
+// ─── 147. NotGreater (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.NotGreater
+ * @metaclass NotGreater (concrete)
+ * @generalization BinaryOperator
+ * @definition Relational operator in which the result is true iff the left operand is not greater than the right operand
+ * @note §8.2.1.5.9 lists NotGreater as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface INotGreater extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class NotGreater extends BinaryOperator implements INotGreater {
+  override readonly metaClass = "NotGreater" as const;
+}
+
+// ─── 148. NotLess (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.NotLess
+ * @metaclass NotLess (concrete)
+ * @generalization BinaryOperator
+ * @definition Relational operator in which the result is true iff the left operand is not less than the right operand
+ * @note §8.2.1.5.9 lists NotLess as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface INotLess extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class NotLess extends BinaryOperator implements INotLess {
+  override readonly metaClass = "NotLess" as const;
+}
+
+// ─── 149. OperatorAssign (§8.2.1.5.9.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.1
+ * @xmiId ASTMCore.ASTMSyntax.Expression.OperatorAssign
+ * @metaclass OperatorAssign (concrete)
+ * @generalization BinaryOperator
+ * @definition Assignment operators compounded with a binary operator
+ * @note §8.2.1.5.9.1 prose: "The interior class OperatorAssign is a
+ *   subclass of BinaryOperator, and has unary association operator to
+ *   inner class BinaryOperator." Footnote (6): "e.g., +=, *=, etc."
+ *   The own `operator` attribute is redeclared on OperatorAssign to
+ *   carry the embedded binary operator that is being compounded with
+ *   the assignment — e.g., for `+=`, the operator end carries an `Add`
+ *   instance.
+ * @ownedAttributes
+ *   • operator : BinaryOperator [1..1] -- §8.2.1.5.9.1: unary association operator to BinaryOperator. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IOperatorAssign extends IBinaryOperator {
+  readonly operator: IBinaryOperator;
+}
+
+export class OperatorAssign extends BinaryOperator implements IOperatorAssign {
+  override readonly metaClass = "OperatorAssign" as const;
+  readonly operator: IBinaryOperator;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    operator: IBinaryOperator;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.operator = args.operator;
+  }
+}
+
+// ─── 150. Or (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Or
+ * @metaclass Or (concrete)
+ * @generalization BinaryOperator
+ * @definition Logical disjunction operator
+ * @note §8.2.1.5.9 lists Or as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IOr extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Or extends BinaryOperator implements IOr {
+  override readonly metaClass = "Or" as const;
+}
+
+// ─── 151. Subtract (§8.2.1.5.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Subtract
+ * @metaclass Subtract (concrete)
+ * @generalization BinaryOperator
+ * @definition Subtraction operator
+ * @note §8.2.1.5.9 lists Subtract as a BinaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from BinaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ISubtract extends IBinaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Subtract extends BinaryOperator implements ISubtract {
+  override readonly metaClass = "Subtract" as const;
+}
+
+// ─── 152. AddressOf (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.AddressOf
+ * @metaclass AddressOf (concrete)
+ * @generalization UnaryOperator
+ * @definition Operator which results in the address of its operand
+ * @note §8.2.1.5.8 lists AddressOf as a UnaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from UnaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IAddressOf extends IUnaryOperator {
+  // terminal — no further structural members.
+}
+
+export class AddressOf extends UnaryOperator implements IAddressOf {
+  override readonly metaClass = "AddressOf" as const;
+}
+
+// ─── 153. BitNot (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.BitNot
+ * @metaclass BitNot (concrete)
+ * @generalization UnaryOperator
+ * @definition Bitwise complement operator
+ * @note §8.2.1.5.8 lists BitNot as a UnaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from UnaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBitNot extends IUnaryOperator {
+  // terminal — no further structural members.
+}
+
+export class BitNot extends UnaryOperator implements IBitNot {
+  override readonly metaClass = "BitNot" as const;
+}
+
+// ─── 154. Decrement (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Decrement
+ * @metaclass Decrement (concrete)
+ * @generalization UnaryOperator
+ * @definition Operator which decrements its operand and results in the decremented value
+ * @note §8.2.1.5.8 lists Decrement as a UnaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from UnaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDecrement extends IUnaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Decrement extends UnaryOperator implements IDecrement {
+  override readonly metaClass = "Decrement" as const;
+}
+
+// ─── 155. Deref (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Deref
+ * @metaclass Deref (concrete)
+ * @generalization UnaryOperator
+ * @definition Operator which results in the value of which its operand is the address
+ * @note §8.2.1.5.8 lists Deref as a UnaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from UnaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDeref extends IUnaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Deref extends UnaryOperator implements IDeref {
+  override readonly metaClass = "Deref" as const;
+}
+
+// ─── 156. Increment (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Increment
+ * @metaclass Increment (concrete)
+ * @generalization UnaryOperator
+ * @definition Operator which increments its operand and results in the incremented value
+ * @note §8.2.1.5.8 lists Increment as a UnaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from UnaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IIncrement extends IUnaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Increment extends UnaryOperator implements IIncrement {
+  override readonly metaClass = "Increment" as const;
+}
+
+// ─── 157. Not (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.Not
+ * @metaclass Not (concrete)
+ * @generalization UnaryOperator
+ * @definition Logical complement operator
+ * @note §8.2.1.5.8 lists Not as a UnaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from UnaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface INot extends IUnaryOperator {
+  // terminal — no further structural members.
+}
+
+export class Not extends UnaryOperator implements INot {
+  override readonly metaClass = "Not" as const;
+}
+
+// ─── 158. PostDecrement (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.PostDecrement
+ * @metaclass PostDecrement (concrete)
+ * @generalization UnaryOperator
+ * @definition Operator which results in the value of its operand before it is decremented
+ * @note §8.2.1.5.8 lists PostDecrement as a UnaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from UnaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IPostDecrement extends IUnaryOperator {
+  // terminal — no further structural members.
+}
+
+export class PostDecrement extends UnaryOperator implements IPostDecrement {
+  override readonly metaClass = "PostDecrement" as const;
+}
+
+// ─── 159. PostIncrement (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.PostIncrement
+ * @metaclass PostIncrement (concrete)
+ * @generalization UnaryOperator
+ * @definition Operator which results in the value of its operand before it is incremented
+ * @note §8.2.1.5.8 lists PostIncrement as a UnaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from UnaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IPostIncrement extends IUnaryOperator {
+  // terminal — no further structural members.
+}
+
+export class PostIncrement extends UnaryOperator implements IPostIncrement {
+  override readonly metaClass = "PostIncrement" as const;
+}
+
+// ─── 160. UnaryMinus (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.UnaryMinus
+ * @metaclass UnaryMinus (concrete)
+ * @generalization UnaryOperator
+ * @definition Negation operator
+ * @note §8.2.1.5.8 lists UnaryMinus as a UnaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from UnaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IUnaryMinus extends IUnaryOperator {
+  // terminal — no further structural members.
+}
+
+export class UnaryMinus extends UnaryOperator implements IUnaryMinus {
+  override readonly metaClass = "UnaryMinus" as const;
+}
+
+// ─── 161. UnaryPlus (§8.2.1.5.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.8
+ * @xmiId ASTMCore.ASTMSyntax.Expression.UnaryPlus
+ * @metaclass UnaryPlus (concrete)
+ * @generalization UnaryOperator
+ * @definition Unary plus operator
+ * @note §8.2.1.5.8 lists UnaryPlus as a UnaryOperator terminal leaf.
+ * @ownedAttributes (none -- inherited from UnaryOperator / MinorSyntaxObject / GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IUnaryPlus extends IUnaryOperator {
+  // terminal — no further structural members.
+}
+
+export class UnaryPlus extends UnaryOperator implements IUnaryPlus {
+  override readonly metaClass = "UnaryPlus" as const;
+}
+
+// ─── 162. ActualParameterExpression (§8.2.1.5.9.5.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.5.1
+ * @xmiId ASTMCore.ASTMSyntax.Expression.ActualParameterExpression
+ * @metaclass ActualParameterExpression (concrete)
+ * @generalization ActualParameter
+ * @definition Actual parameters involving expressions (as opposed to missing)
+ * @note §8.2.1.5.9.5.1 prose: "ActualParameterExpression is subclass of
+ *   ActualParameter and has two subclasses ByValueActualParameterExpression
+ *   and ByReferenceActualParameterExpression that are used for denoting
+ *   parameters passed by value and reference and unary association
+ *   value to Expression."
+ * @ownedAttributes
+ *   • value : Expression [1..1] -- §8.2.1.5.9.5.1: unary association value to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IActualParameterExpression extends IActualParameter {
+  readonly value: IExpression;
+}
+
+export class ActualParameterExpression extends ActualParameter implements IActualParameterExpression {
+  override readonly metaClass: string = "ActualParameterExpression";
+  readonly value: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    value: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.value = args.value;
+  }
+}
+
+// ─── 163. MissingActualParameter (§8.2.1.5.9.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.5
+ * @xmiId ASTMCore.ASTMSyntax.Expression.MissingActualParameter
+ * @metaclass MissingActualParameter (concrete)
+ * @generalization ActualParameter
+ * @definition Missing actual parameter
+ * @note §8.2.1.5.9.5 prose: "The MissingActualParameter is a subclass of
+ *   ActualParameter used for denoting that the actual parameters are not
+ *   present."
+ * @ownedAttributes (none)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IMissingActualParameter extends IActualParameter {
+  // terminal — no further structural members.
+}
+
+export class MissingActualParameter extends ActualParameter implements IMissingActualParameter {
+  override readonly metaClass = "MissingActualParameter" as const;
+}
+
+// ─── 164. ByReferenceActualParameterExpression (§8.2.1.5.9.5.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.5.1
+ * @xmiId ASTMCore.ASTMSyntax.Expression.ByReferenceActualParameterExpression
+ * @metaclass ByReferenceActualParameterExpression (concrete)
+ * @generalization ActualParameterExpression
+ * @definition Actual Parameters passed by reference
+ * @note §8.2.1.5.9.5.1 prose: "The ByReferenceActualParameterExpression is a subclass of ActualParameterExpression used for denoting parameters passed by reference."
+ * @ownedAttributes (none -- value inherited from ActualParameterExpression)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IByReferenceActualParameterExpression extends IActualParameterExpression {
+  // terminal — no further structural members.
+}
+
+export class ByReferenceActualParameterExpression extends ActualParameterExpression implements IByReferenceActualParameterExpression {
+  override readonly metaClass = "ByReferenceActualParameterExpression" as const;
+}
+
+// ─── 165. ByValueActualParameterExpression (§8.2.1.5.9.5.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.5.1
+ * @xmiId ASTMCore.ASTMSyntax.Expression.ByValueActualParameterExpression
+ * @metaclass ByValueActualParameterExpression (concrete)
+ * @generalization ActualParameterExpression
+ * @definition Actual Parameters passed by value
+ * @note §8.2.1.5.9.5.1 prose: "The ByValueActualParameterExpression is a subclass of ActualParameterExpression used for denoting parameters passed by value."
+ * @ownedAttributes (none -- value inherited from ActualParameterExpression)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IByValueActualParameterExpression extends IActualParameterExpression {
+  // terminal — no further structural members.
+}
+
+export class ByValueActualParameterExpression extends ActualParameterExpression implements IByValueActualParameterExpression {
+  override readonly metaClass = "ByValueActualParameterExpression" as const;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END Implementer #4 (Wave 1.4). Next implementer starts at class 166.
 // ═══════════════════════════════════════════════════════════════════════════
