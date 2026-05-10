@@ -73,15 +73,6 @@
 // the structural type.
 // ═══════════════════════════════════════════════════════════════════════════
 
-// ─── Forward-shadow types (resolved by later implementer waves) ───
-// Each alias widens a cross-package reference type to `unknown` so the
-// Wave 1.1 compilation succeeds before later waves are merged. Once all
-// waves are loaded as a single compilation unit, downstream code may
-// downcast through the eventual structural interfaces.
-
-/** Resolved by Wave 5 (Statement). xmi:id: `ASTMCore.ASTMSyntax.Statement.Statement`. */
-type IStatement = unknown;
-
 // ─── 1. GASTMObject (§7.7 - §7.8, §8.2.1) ───
 /**
  * @standard OMG ASTM 1.0 -- formal/2011-01-05
@@ -6043,4 +6034,1199 @@ export class ByValueActualParameterExpression extends ActualParameterExpression 
 
 // ═══════════════════════════════════════════════════════════════════════════
 // END Implementer #4 (Wave 1.4). Next implementer starts at class 166.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BEGIN Implementer #5 (Wave 1.5): GASTM Statement — 28 metaclasses (166-193)
+//
+// Scope: ASTMCore.ASTMSyntax.Statement nested package — comprising:
+//   • Statement root abstract                 (§8.2.1.4.14)          — 1 class
+//   • Direct Statement subclasses             (§8.2.1.4.14.1-14)     — 16 classes
+//     (BlockStatement, BreakStatement, ContinueStatement,
+//      DeclarationOrDefinitionStatement, DeleteStatement,
+//      EmptyStatement, ExpressionStatement, IfStatement,
+//      JumpStatement, LabeledStatement, LoopStatement,
+//      ReturnStatement, SwitchStatement, TerminateStatement,
+//      ThrowStatement, TryStatement)
+//   • Direct LoopStatement subclasses         (§8.2.1.4.14.11)       — 3 classes
+//     (DoWhileStatement, WhileStatement, ForStatement [abstract])
+//   • Direct ForStatement subclasses          (§8.2.1.4.14.11.4-5)   — 2 classes
+//     (ForCheckAfterStatement, ForCheckBeforeStatement)
+//   • Direct MinorSyntaxObject subclasses     (§8.2.1.5.4, §8.2.1.5.7) — 2 classes
+//     (SwitchCase, CatchBlock)
+//   • Direct SwitchCase subclasses            (§8.2.1.5.5-6)         — 2 classes
+//     (CaseBlock, DefaultBlock)
+//   • Direct CatchBlock subclasses            (§8.2.1.5.7.1-2)       — 2 classes
+//     (TypesCatchBlock, VariableCatchBlock)
+//                                                                    ────────
+//                                                                    28 classes
+//
+// Notes on OMG spec gaps observed during this wave:
+//   1. The PDF §8.2.1.4.14 prose only enumerates ForStatement as the abstract
+//      LoopStatement leaf (the `!` prefix mark in the hierarchy block).
+//      LoopStatement itself is NOT marked abstract in EMOF
+//      (`isAbstract` attribute absent => defaults to false).  The §8.2.1.4.14.11
+//      prose ("further classified into interior subclasses WhileStatement,
+//      DoWhileStatement, and ForStatement") is consistent with either
+//      interpretation. We honour the EMOF source-of-truth: LoopStatement is
+//      concrete; ForStatement is abstract.
+//   2. The PDF §8.2.1.4.14.3-4 (BreakStatement, ContinueStatement) describe
+//      `target : LabelAccess?` (Expression-side LabelAccess). The EMOF
+//      ownedAttribute on these two classes declares the type as
+//      `ASTMCore.ASTMSyntax.Expression.LabelAccess` — consistent. The PDF
+//      prose mentions "IdentifierReference" for ContinueStatement; we honour
+//      EMOF (LabelAccess) since EMOF is the authoritative serialization.
+//   3. The PDF §8.2.1.4.14.5 (LabeledStatement) prose specifies
+//      `label : LabelDefinition`. The EMOF agrees. The DeclarationAndDefinition
+//      package's `LabelDefinition` class was authored by Wave 3.
+//   4. The PDF §8.2.1.5.4 (SwitchCase) Property Specification shows
+//      `body : Statement+`. The EMOF declares `body` as `lower="1" upper="*"`.
+//      Match: at least one substatement.
+//   5. The PDF §8.2.1.4.14.15-16 (DeleteStatement, TerminateStatement) follow
+//      the same pattern: TerminateStatement has no properties/associations.
+//      EMOF agrees — empty subclass body.
+//
+// This wave completes the GASTM portion of @amlhubs/astm. Cumulative metaclass
+// count: 193 (matches the EMOF source-of-truth count). The single remaining
+// forward-shadow alias declared in Wave 1.1 (for `IStatement`) is REMOVED
+// above this wave because the real `IStatement` interface is authored below;
+// the alias block is now empty and its surrounding comment header has been
+// deleted, the clean post-GASTM state.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── 166. Statement (§8.2.1.4.14) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14
+ * @xmiId ASTMCore.ASTMSyntax.Statement.Statement
+ * @metaclass Statement (abstract)
+ * @generalization GASTMSyntaxObject
+ * @definition All statements
+ * @note §8.2.1.4.14 prose: "The inner class Statement is a subclass of
+ *   GASTMSyntaticObject, and has interior subclasses ExpressionStatement,
+ *   JumpStatement, BreakStatement, ContinueStatement, LabeledStatement,
+ *   BlockStatement, EmptyStatement, IfStatement, SwitchStatement,
+ *   ReturnStatement, TryStatement, ThrowStatement, DeleteStatement,
+ *   TerminateStatement and inner class LoopStatement further classified into
+ *   interior subclasses WhileStatement, DoWhileStatement, and ForStatement."
+ *   EMOF declares Statement with `isAbstract="true"`.
+ * @ownedAttributes (none)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IStatement extends IGASTMSyntaxObject {
+  // structural marker — concrete subclasses carry their own attribute members.
+}
+
+export abstract class Statement extends GASTMSyntaxObject implements IStatement {
+  override readonly metaClass: string = "Statement";
+}
+
+// ─── 167. BlockStatement (§8.2.1.4.14.6) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.6
+ * @xmiId ASTMCore.ASTMSyntax.Statement.BlockStatement
+ * @metaclass BlockStatement (concrete)
+ * @generalization Statement
+ * @definition Statements consisting of a series of substatements
+ * @note §8.2.1.4.14.6 prose: "The interior class BlockStatement is a subclass
+ *   of Statement, and has unary association subStatements with the interior
+ *   inner class Statement and unary semantic association opensScope with the
+ *   semantic class BlockScope."
+ * @ownedAttributes
+ *   • subStatements : Statement  [0..*] -- §8.2.1.4.14.6: any number of subStatements associations.
+ *   • opensScope    : BlockScope [1..1] -- §8.2.1.4.14.6: unary semantic association opensScope to BlockScope. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBlockStatement extends IStatement {
+  readonly subStatements: ReadonlyArray<IStatement>;
+  readonly opensScope: IBlockScope;
+}
+
+export class BlockStatement extends Statement implements IBlockStatement {
+  override readonly metaClass: string = "BlockStatement";
+  readonly subStatements: ReadonlyArray<IStatement>;
+  readonly opensScope: IBlockScope;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    opensScope: IBlockScope;
+    subStatements?: ReadonlyArray<IStatement>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.subStatements = args.subStatements ?? [];
+    this.opensScope = args.opensScope;
+  }
+}
+
+// ─── 168. BreakStatement (§8.2.1.4.14.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.3
+ * @xmiId ASTMCore.ASTMSyntax.Statement.BreakStatement
+ * @metaclass BreakStatement (concrete)
+ * @generalization Statement
+ * @definition Statements that exit a loop or a switch
+ * @note §8.2.1.4.14.3 prose: "The interior class BreakStatement is a subclass
+ *   of Statement, and is a subclass of Statement, and has unary association
+ *   target with the interior class IdentifierReference."  The PDF prose says
+ *   IdentifierReference but EMOF authoritatively declares the type as
+ *   `ASTMCore.ASTMSyntax.Expression.LabelAccess`.  The PDF's Property
+ *   Specification reconciles to `target : LabelAccess?` — i.e. optional —
+ *   and EMOF declares this attribute with NO explicit lower bound (defaults
+ *   to 0).
+ * @ownedAttributes
+ *   • target : LabelAccess [0..1] -- §8.2.1.4.14.3: unary association target to LabelAccess.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBreakStatement extends IStatement {
+  readonly target?: ILabelAccess;
+}
+
+export class BreakStatement extends Statement implements IBreakStatement {
+  override readonly metaClass: string = "BreakStatement";
+  readonly target?: ILabelAccess;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    target?: ILabelAccess;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.target = args.target;
+  }
+}
+
+// ─── 169. ContinueStatement (§8.2.1.4.14.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.ContinueStatement
+ * @metaclass ContinueStatement (concrete)
+ * @generalization Statement
+ * @definition Statements that branch to the top of a loop
+ * @note §8.2.1.4.14.4 prose: "The interior class ContinueStatement is a subclass
+ *   of Statement, and has unary association target with the interior class
+ *   IdentifierReference."  PDF prose names IdentifierReference but EMOF
+ *   authoritatively declares the type as
+ *   `ASTMCore.ASTMSyntax.Expression.LabelAccess`.  PDF Property Specification:
+ *   `target : LabelAccess?` (optional).
+ * @ownedAttributes
+ *   • target : LabelAccess [0..1] -- §8.2.1.4.14.4: unary association target to LabelAccess.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IContinueStatement extends IStatement {
+  readonly target?: ILabelAccess;
+}
+
+export class ContinueStatement extends Statement implements IContinueStatement {
+  override readonly metaClass: string = "ContinueStatement";
+  readonly target?: ILabelAccess;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    target?: ILabelAccess;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.target = args.target;
+  }
+}
+
+// ─── 170. DeclarationOrDefinitionStatement (§8.2.1.4.14) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14
+ * @xmiId ASTMCore.ASTMSyntax.Statement.DeclarationOrDefinitionStatement
+ * @metaclass DeclarationOrDefinitionStatement (concrete)
+ * @generalization Statement
+ * @definition Statements that introduce a declaration or definition
+ * @note §8.2.1.4.14 prose enumerates DeclarationOrDefinitionStatement among the
+ *   direct subclasses of Statement.  EMOF declares one owned attribute
+ *   `declOrDefn` with lower="1" of type
+ *   `ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject`
+ *   (preserving OMG's spelling "Defintion" -- missing 'i' -- per the PDF
+ *   xmi:id convention).
+ * @ownedAttributes
+ *   • declOrDefn : DefintionObject [1..1] -- §8.2.1.4.14: unary association declOrDefn to DefintionObject. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDeclarationOrDefinitionStatement extends IStatement {
+  readonly declOrDefn: IDefintionObject;
+}
+
+export class DeclarationOrDefinitionStatement extends Statement implements IDeclarationOrDefinitionStatement {
+  override readonly metaClass: string = "DeclarationOrDefinitionStatement";
+  readonly declOrDefn: IDefintionObject;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    declOrDefn: IDefintionObject;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.declOrDefn = args.declOrDefn;
+  }
+}
+
+// ─── 171. DeleteStatement (§8.2.1.4.14.14) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.14
+ * @xmiId ASTMCore.ASTMSyntax.Statement.DeleteStatement
+ * @metaclass DeleteStatement (concrete)
+ * @generalization Statement
+ * @definition Statements that deallocate storage
+ * @note §8.2.1.4.14.14 prose: "DeleteStatement is a subclass of Statement, and
+ *   has unary association operand to class Expression, and is used for
+ *   depicting deallocation of storage."  EMOF lower="1" on operand.
+ * @ownedAttributes
+ *   • operand : Expression [1..1] -- §8.2.1.4.14.14: unary association operand to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDeleteStatement extends IStatement {
+  readonly operand: IExpression;
+}
+
+export class DeleteStatement extends Statement implements IDeleteStatement {
+  override readonly metaClass: string = "DeleteStatement";
+  readonly operand: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    operand: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.operand = args.operand;
+  }
+}
+
+// ─── 172. EmptyStatement (§8.2.1.4.14.7) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.7
+ * @xmiId ASTMCore.ASTMSyntax.Statement.EmptyStatement
+ * @metaclass EmptyStatement (concrete)
+ * @generalization Statement
+ * @definition Statement that does nothing
+ * @note §8.2.1.4.14.7 prose: "The terminal class EmptyStatement is a subclass
+ *   of Statement and has no associations, no properties, and no subclasses."
+ * @ownedAttributes (none)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IEmptyStatement extends IStatement {
+  // terminal — no further structural members.
+}
+
+export class EmptyStatement extends Statement implements IEmptyStatement {
+  override readonly metaClass = "EmptyStatement" as const;
+}
+
+// ─── 173. ExpressionStatement (§8.2.1.4.14.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.1
+ * @xmiId ASTMCore.ASTMSyntax.Statement.ExpressionStatement
+ * @metaclass ExpressionStatement (concrete)
+ * @generalization Statement
+ * @definition Statements comprised of just an expression
+ * @note §8.2.1.4.14.1 prose: "The class ExpressionStatement is a subclass of
+ *   Statement, and has unary association expression with the interior inner
+ *   class Expression."  EMOF lower="1" on expression.
+ * @ownedAttributes
+ *   • expression : Expression [1..1] -- §8.2.1.4.14.1: unary association expression to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IExpressionStatement extends IStatement {
+  readonly expression: IExpression;
+}
+
+export class ExpressionStatement extends Statement implements IExpressionStatement {
+  override readonly metaClass: string = "ExpressionStatement";
+  readonly expression: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expression: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.expression = args.expression;
+  }
+}
+
+// ─── 174. IfStatement (§8.2.1.4.14.8) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.8
+ * @xmiId ASTMCore.ASTMSyntax.Statement.IfStatement
+ * @metaclass IfStatement (concrete)
+ * @generalization Statement
+ * @definition Statements that conditionally execute one of two substatements
+ * @note §8.2.1.4.14.8 prose: "The interior class IfStatement is a subclass of
+ *   Statement, and has unary association condition to the interior inner class
+ *   Expression and the unary association thenBody to the interior inner class
+ *   Statement and the unary association elseBody to the interior inner class
+ *   Statement."  PDF Property Specification:
+ *   `condition : Expression`, `thenBody : Statement`, `elseBody : Statement?`.
+ *   EMOF lower="1" on condition and thenBody; elseBody optional.
+ * @ownedAttributes
+ *   • condition : Expression [1..1] -- §8.2.1.4.14.8: unary association condition to Expression. EMOF lower="1".
+ *   • thenBody  : Statement  [1..1] -- §8.2.1.4.14.8: unary association thenBody to Statement. EMOF lower="1".
+ *   • elseBody  : Statement  [0..1] -- §8.2.1.4.14.8: unary association elseBody to Statement.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IIfStatement extends IStatement {
+  readonly condition: IExpression;
+  readonly thenBody: IStatement;
+  readonly elseBody?: IStatement;
+}
+
+export class IfStatement extends Statement implements IIfStatement {
+  override readonly metaClass: string = "IfStatement";
+  readonly condition: IExpression;
+  readonly thenBody: IStatement;
+  readonly elseBody?: IStatement;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    condition: IExpression;
+    thenBody: IStatement;
+    elseBody?: IStatement;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.condition = args.condition;
+    this.thenBody = args.thenBody;
+    this.elseBody = args.elseBody;
+  }
+}
+
+// ─── 175. JumpStatement (§8.2.1.4.14.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.2
+ * @xmiId ASTMCore.ASTMSyntax.Statement.JumpStatement
+ * @metaclass JumpStatement (concrete)
+ * @generalization Statement
+ * @definition Statements that branch to a label
+ * @note §8.2.1.4.14.2 prose: "The interior class JumpStatement is a subclass of
+ *   Statement, and has unary association target with the interior inner class
+ *   Expression."  EMOF lower="1" on target; type is `Expression` (NOT
+ *   LabelAccess, distinguishing JumpStatement from Break/ContinueStatement).
+ * @ownedAttributes
+ *   • target : Expression [1..1] -- §8.2.1.4.14.2: unary association target to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IJumpStatement extends IStatement {
+  readonly target: IExpression;
+}
+
+export class JumpStatement extends Statement implements IJumpStatement {
+  override readonly metaClass: string = "JumpStatement";
+  readonly target: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    target: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.target = args.target;
+  }
+}
+
+// ─── 176. LabeledStatement (§8.2.1.4.14.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.5
+ * @xmiId ASTMCore.ASTMSyntax.Statement.LabeledStatement
+ * @metaclass LabeledStatement (concrete)
+ * @generalization Statement
+ * @definition Statements that are associated with a label definition
+ * @note §8.2.1.4.14.5 prose: "The interior class LabeledStatement is a subclass
+ *   of Statement, and has unary association label with the interior class
+ *   LabelDefinition."  PDF Property Specification:
+ *   `label : LabelDefinition`, `statement : Statement?`.  EMOF lower="1" on
+ *   label; statement optional.
+ * @ownedAttributes
+ *   • label     : LabelDefinition [1..1] -- §8.2.1.4.14.5: unary association label to LabelDefinition. EMOF lower="1".
+ *   • statement : Statement       [0..1] -- §8.2.1.4.14.5: unary association statement to Statement.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ILabeledStatement extends IStatement {
+  readonly label: ILabelDefinition;
+  readonly statement?: IStatement;
+}
+
+export class LabeledStatement extends Statement implements ILabeledStatement {
+  override readonly metaClass: string = "LabeledStatement";
+  readonly label: ILabelDefinition;
+  readonly statement?: IStatement;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    label: ILabelDefinition;
+    statement?: IStatement;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.label = args.label;
+    this.statement = args.statement;
+  }
+}
+
+// ─── 177. LoopStatement (§8.2.1.4.14.11) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.11
+ * @xmiId ASTMCore.ASTMSyntax.Statement.LoopStatement
+ * @metaclass LoopStatement (concrete)
+ * @generalization Statement
+ * @definition Statements with a substatement (body) that is potentially repeatedly executed
+ * @note §8.2.1.4.14.11 prose: "The interior inner class LoopStatement is a
+ *   subclass of Statement, and has unary association body to the interior
+ *   inner class Statement and the unary association condition to the interior
+ *   inner class Expression. The inner LoopStatement is further classified into
+ *   interior subclasses WhileStatement, DoWhileStatement, and ForStatement."
+ *   The PDF marks ForStatement as abstract (`! ForStatement`) but does NOT
+ *   mark LoopStatement itself as abstract.  EMOF agrees: LoopStatement has no
+ *   `isAbstract` attribute (defaults to false).  We honour the EMOF
+ *   source-of-truth: LoopStatement is concrete.
+ * @ownedAttributes
+ *   • condition : Expression [1..1] -- §8.2.1.4.14.11: unary association condition to Expression. EMOF lower="1".
+ *   • body      : Statement  [1..1] -- §8.2.1.4.14.11: unary association body to Statement. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ILoopStatement extends IStatement {
+  readonly condition: IExpression;
+  readonly body: IStatement;
+}
+
+export class LoopStatement extends Statement implements ILoopStatement {
+  override readonly metaClass: string = "LoopStatement";
+  readonly condition: IExpression;
+  readonly body: IStatement;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    condition: IExpression;
+    body: IStatement;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.condition = args.condition;
+    this.body = args.body;
+  }
+}
+
+// ─── 178. ReturnStatement (§8.2.1.4.14.10) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.10
+ * @xmiId ASTMCore.ASTMSyntax.Statement.ReturnStatement
+ * @metaclass ReturnStatement (concrete)
+ * @generalization Statement
+ * @definition Statements that cause return from a function, possibly with a return value
+ * @note §8.2.1.4.14.10 prose: "The interior class ReturnStatement is a subclass
+ *   of Statement, and has unary association returnValue with the interior
+ *   inner class Expression."  PDF Property Specification:
+ *   `returnValue : Expression?` (optional).  EMOF declares no lower bound
+ *   (defaults to 0).
+ * @ownedAttributes
+ *   • returnValue : Expression [0..1] -- §8.2.1.4.14.10: unary association returnValue to Expression.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IReturnStatement extends IStatement {
+  readonly returnValue?: IExpression;
+}
+
+export class ReturnStatement extends Statement implements IReturnStatement {
+  override readonly metaClass: string = "ReturnStatement";
+  readonly returnValue?: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    returnValue?: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.returnValue = args.returnValue;
+  }
+}
+
+// ─── 179. SwitchStatement (§8.2.1.4.14.9) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.9
+ * @xmiId ASTMCore.ASTMSyntax.Statement.SwitchStatement
+ * @metaclass SwitchStatement (concrete)
+ * @generalization Statement
+ * @definition Statements that conditionally execute one of many substatements
+ * @note §8.2.1.4.14.9 prose: "The interior class SwitchStatement is a subclass
+ *   of Statement, and has unary association cases to the interior class
+ *   SwitchCase and the unary association switchExpression to the interior
+ *   inner class Expression."  EMOF lower="1" on switchExpression;
+ *   cases lower="1" upper="*" (i.e. one to many cases required).
+ * @ownedAttributes
+ *   • switchExpression : Expression [1..1] -- §8.2.1.4.14.9: unary association switchExpression to Expression. EMOF lower="1".
+ *   • cases            : SwitchCase [1..*] -- §8.2.1.4.14.9: any number of cases associations to SwitchCase. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ISwitchStatement extends IStatement {
+  readonly switchExpression: IExpression;
+  readonly cases: ReadonlyArray<ISwitchCase>;
+}
+
+export class SwitchStatement extends Statement implements ISwitchStatement {
+  override readonly metaClass: string = "SwitchStatement";
+  readonly switchExpression: IExpression;
+  readonly cases: ReadonlyArray<ISwitchCase>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    switchExpression: IExpression;
+    cases: ReadonlyArray<ISwitchCase>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.switchExpression = args.switchExpression;
+    this.cases = args.cases;
+  }
+}
+
+// ─── 180. TerminateStatement (§8.2.1.4.14.15) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.15
+ * @xmiId ASTMCore.ASTMSyntax.Statement.TerminateStatement
+ * @metaclass TerminateStatement (concrete)
+ * @generalization Statement
+ * @definition Statement that terminates execution
+ * @note §8.2.1.4.14.15 prose: "TerminateStatement has no immediate properties,
+ *   associations, or subclasses it is used for depicting the termination of
+ *   execution."  EMOF declares the class with no ownedAttribute.
+ * @ownedAttributes (none)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ITerminateStatement extends IStatement {
+  // terminal — no further structural members.
+}
+
+export class TerminateStatement extends Statement implements ITerminateStatement {
+  override readonly metaClass = "TerminateStatement" as const;
+}
+
+// ─── 181. ThrowStatement (§8.2.1.4.14.13) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.13
+ * @xmiId ASTMCore.ASTMSyntax.Statement.ThrowStatement
+ * @metaclass ThrowStatement (concrete)
+ * @generalization Statement
+ * @definition Statements that cause an exception to be thrown
+ * @note §8.2.1.4.14.13 prose: "The class ThrowStatement is a subclass of
+ *   Statement, and has unary association exception to interior inner class
+ *   Expression."  EMOF lower="1" on exception.
+ * @ownedAttributes
+ *   • exception : Expression [1..1] -- §8.2.1.4.14.13: unary association exception to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IThrowStatement extends IStatement {
+  readonly exception: IExpression;
+}
+
+export class ThrowStatement extends Statement implements IThrowStatement {
+  override readonly metaClass: string = "ThrowStatement";
+  readonly exception: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    exception: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.exception = args.exception;
+  }
+}
+
+// ─── 182. TryStatement (§8.2.1.4.14.12) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.12
+ * @xmiId ASTMCore.ASTMSyntax.Statement.TryStatement
+ * @metaclass TryStatement (concrete)
+ * @generalization Statement
+ * @definition Exception-handling statements, consisting of a substatement that may throw exceptions and catch blocks to handle them
+ * @note §8.2.1.4.14.12 prose: "The class TryStatement is a subclass of
+ *   Statement, and has any number of association catchBlocks to to interior
+ *   class CatchBlock, unary association of finalStatement to interior inner
+ *   class Statement and unary association of guardedStatement to interior
+ *   inner class Statement."  PDF Property Specification:
+ *   `guardedStatement : Statement`, `catchBlocks : CatchBlock*`,
+ *   `finalStatement : Statement?`.  EMOF lower="1" on guardedStatement;
+ *   finalStatement and catchBlocks optional.
+ * @ownedAttributes
+ *   • guardedStatement : Statement   [1..1] -- §8.2.1.4.14.12: unary association guardedStatement to Statement. EMOF lower="1".
+ *   • catchBlocks      : CatchBlock  [0..*] -- §8.2.1.4.14.12: any number of catchBlocks associations.
+ *   • finalStatement   : Statement   [0..1] -- §8.2.1.4.14.12: unary association finalStatement to Statement.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ITryStatement extends IStatement {
+  readonly guardedStatement: IStatement;
+  readonly catchBlocks: ReadonlyArray<ICatchBlock>;
+  readonly finalStatement?: IStatement;
+}
+
+export class TryStatement extends Statement implements ITryStatement {
+  override readonly metaClass: string = "TryStatement";
+  readonly guardedStatement: IStatement;
+  readonly catchBlocks: ReadonlyArray<ICatchBlock>;
+  readonly finalStatement?: IStatement;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    guardedStatement: IStatement;
+    catchBlocks?: ReadonlyArray<ICatchBlock>;
+    finalStatement?: IStatement;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.guardedStatement = args.guardedStatement;
+    this.catchBlocks = args.catchBlocks ?? [];
+    this.finalStatement = args.finalStatement;
+  }
+}
+
+// ─── 183. DoWhileStatement (§8.2.1.4.14.11.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.11.2
+ * @xmiId ASTMCore.ASTMSyntax.Statement.DoWhileStatement
+ * @metaclass DoWhileStatement (concrete)
+ * @generalization LoopStatement
+ * @definition Loop statement whose body is repeatedly executed while a specified condition, tested after each execution, is true
+ * @note §8.2.1.4.14.11.2 prose: "The DoWhileStatement is a subclass of
+ *   LoopStatement, and is the variation of the LoopStatement for which the
+ *   Condition is tested after the Body is executed."  EMOF declares
+ *   DoWhileStatement with no additional ownedAttribute (inherits condition
+ *   and body from LoopStatement).
+ * @ownedAttributes (none -- condition and body inherited from LoopStatement)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDoWhileStatement extends ILoopStatement {
+  // terminal — no further structural members.
+}
+
+export class DoWhileStatement extends LoopStatement implements IDoWhileStatement {
+  override readonly metaClass = "DoWhileStatement" as const;
+}
+
+// ─── 184. WhileStatement (§8.2.1.4.14.11.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.11.1
+ * @xmiId ASTMCore.ASTMSyntax.Statement.WhileStatement
+ * @metaclass WhileStatement (concrete)
+ * @generalization LoopStatement
+ * @definition Loop statement whose body is repeatedly executed while a specified condition, tested before each execution, is true
+ * @note §8.2.1.4.14.11.1 prose: "The WhileStatement is a subclass of
+ *   LoopStatement, and is the variation of the LoopStatement for which the
+ *   Condition is tested before the Body is executed."  EMOF declares
+ *   WhileStatement with no additional ownedAttribute (inherits condition and
+ *   body from LoopStatement).
+ * @ownedAttributes (none -- condition and body inherited from LoopStatement)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IWhileStatement extends ILoopStatement {
+  // terminal — no further structural members.
+}
+
+export class WhileStatement extends LoopStatement implements IWhileStatement {
+  override readonly metaClass = "WhileStatement" as const;
+}
+
+// ─── 185. ForStatement (§8.2.1.4.14.11.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.11.3
+ * @xmiId ASTMCore.ASTMSyntax.Statement.ForStatement
+ * @metaclass ForStatement (abstract)
+ * @generalization LoopStatement
+ * @definition Loop statement with initializing and incrementing parts
+ * @note §8.2.1.4.14.11.3 prose: "The ForStatement is a subclass of
+ *   LoopStatement, and is the variation of the LoopStatement for which the
+ *   Condition is tested before the Body is executed and any number of
+ *   associations of initBody to interior inner class Expression and any
+ *   number of associations of iterationBody to interior inner class
+ *   Expression."  The §8.2.1.4.14.11 hierarchy specification marks
+ *   ForStatement with `!` (abstract), and EMOF declares
+ *   `isAbstract="true"`.  The two concrete leaves are ForCheckBeforeStatement
+ *   and ForCheckAfterStatement.
+ * @ownedAttributes
+ *   • initBody      : Expression [0..*] -- §8.2.1.4.14.11.3: any number of initBody associations to Expression.
+ *   • iterationBody : Expression [0..*] -- §8.2.1.4.14.11.3: any number of iterationBody associations to Expression.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IForStatement extends ILoopStatement {
+  readonly initBody: ReadonlyArray<IExpression>;
+  readonly iterationBody: ReadonlyArray<IExpression>;
+}
+
+export abstract class ForStatement extends LoopStatement implements IForStatement {
+  override readonly metaClass: string = "ForStatement";
+  readonly initBody: ReadonlyArray<IExpression>;
+  readonly iterationBody: ReadonlyArray<IExpression>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    condition: IExpression;
+    body: IStatement;
+    initBody?: ReadonlyArray<IExpression>;
+    iterationBody?: ReadonlyArray<IExpression>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      condition: args.condition,
+      body: args.body,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.initBody = args.initBody ?? [];
+    this.iterationBody = args.iterationBody ?? [];
+  }
+}
+
+// ─── 186. ForCheckAfterStatement (§8.2.1.4.14.11.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.11.5
+ * @xmiId ASTMCore.ASTMSyntax.Statement.ForCheckAfterStatement
+ * @metaclass ForCheckAfterStatement (concrete)
+ * @generalization ForStatement
+ * @definition For statement with test after each iteration
+ * @note §8.2.1.4.14.11.5 prose: "The ForCheckAfterStatement is a subclass of
+ *   ForStatement, and is the variation of the LoopStatement for which the
+ *   Condition is tested after the Body is executed."  EMOF declares the class
+ *   with no additional ownedAttribute (inherits initBody, iterationBody from
+ *   ForStatement; condition, body from LoopStatement).
+ * @ownedAttributes (none -- inherited from ForStatement / LoopStatement)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IForCheckAfterStatement extends IForStatement {
+  // terminal — no further structural members.
+}
+
+export class ForCheckAfterStatement extends ForStatement implements IForCheckAfterStatement {
+  override readonly metaClass = "ForCheckAfterStatement" as const;
+}
+
+// ─── 187. ForCheckBeforeStatement (§8.2.1.4.14.11.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.4.14.11.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.ForCheckBeforeStatement
+ * @metaclass ForCheckBeforeStatement (concrete)
+ * @generalization ForStatement
+ * @definition For statement with test before each iteration
+ * @note §8.2.1.4.14.11.4 prose: "The ForCheckBeforeStatement is a subclass of
+ *   ForStatement, and is the variation of the LoopStatement for which the
+ *   Condition is tested before the Body is executed."  EMOF declares the
+ *   class with no additional ownedAttribute (inherits initBody, iterationBody
+ *   from ForStatement; condition, body from LoopStatement).
+ * @ownedAttributes (none -- inherited from ForStatement / LoopStatement)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IForCheckBeforeStatement extends IForStatement {
+  // terminal — no further structural members.
+}
+
+export class ForCheckBeforeStatement extends ForStatement implements IForCheckBeforeStatement {
+  override readonly metaClass = "ForCheckBeforeStatement" as const;
+}
+
+// ─── 188. SwitchCase (§8.2.1.5.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.SwitchCase
+ * @metaclass SwitchCase (concrete)
+ * @generalization MinorSyntaxObject
+ * @definition Parts of a switch statement that are conditionally executed
+ * @note §8.2.1.5.4 prose: "The class SwitchCase is a subclass of
+ *   OtherSytnaxObject, has a boolean attribute isEvaluateAllCases, has unary
+ *   association body to interior inner class Statement, and subclasses
+ *   CaseBlock and DefaultBlock."  EMOF locates SwitchCase under the Statement
+ *   nested package with `superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"`;
+ *   the PDF's "OtherSytnaxObject" wording corresponds to MinorSyntaxObject.
+ *   body lower="1" upper="*" (at least one statement required).
+ * @ownedAttributes
+ *   • isEvaluateAllCases : Boolean   [0..1] -- §8.2.1.5.4: primitive boolean attribute (EMOF has no explicit lower bound).
+ *   • body               : Statement [1..*] -- §8.2.1.5.4: any number of body associations to Statement. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ISwitchCase extends IMinorSyntaxObject {
+  readonly isEvaluateAllCases?: boolean;
+  readonly body: ReadonlyArray<IStatement>;
+}
+
+export class SwitchCase extends MinorSyntaxObject implements ISwitchCase {
+  override readonly metaClass: string = "SwitchCase";
+  readonly isEvaluateAllCases?: boolean;
+  readonly body: ReadonlyArray<IStatement>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    body: ReadonlyArray<IStatement>;
+    isEvaluateAllCases?: boolean;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.body = args.body;
+    this.isEvaluateAllCases = args.isEvaluateAllCases;
+  }
+}
+
+// ─── 189. CatchBlock (§8.2.1.5.7) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.7
+ * @xmiId ASTMCore.ASTMSyntax.Statement.CatchBlock
+ * @metaclass CatchBlock (concrete)
+ * @generalization MinorSyntaxObject
+ * @definition Parts of a try statement that specify a statement to execute under specified exception conditions
+ * @note §8.2.1.5.7 prose: "The class CatchBlock is a subclass of
+ *   OtherSyntaxObject, and has interior subclasses TypesCatchBlock and
+ *   VariableCatchBlock. The CatchBlock has unary association Body to
+ *   Statement."  EMOF locates CatchBlock under the Statement nested package
+ *   with `superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"`.  body lower="1".
+ * @ownedAttributes
+ *   • body : Statement [1..1] -- §8.2.1.5.7: unary association body to Statement. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ICatchBlock extends IMinorSyntaxObject {
+  readonly body: IStatement;
+}
+
+export class CatchBlock extends MinorSyntaxObject implements ICatchBlock {
+  override readonly metaClass: string = "CatchBlock";
+  readonly body: IStatement;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    body: IStatement;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.body = args.body;
+  }
+}
+
+// ─── 190. CaseBlock (§8.2.1.5.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.5
+ * @xmiId ASTMCore.ASTMSyntax.Statement.CaseBlock
+ * @metaclass CaseBlock (concrete)
+ * @generalization SwitchCase
+ * @definition Switch cases that are executed when one of their values matches that of the enclosing switch statement
+ * @note §8.2.1.5.5 prose: "The class CaseBlock is a subclass of
+ *   OtherSytnaxObject, and has any number of associations of caseExpression
+ *   to interior inner class Expression."  PDF Property Specification:
+ *   `caseExpressions : Expression+` -- at least one.  EMOF declares
+ *   `caseExpression` (singular in EMOF; PDF prose plural) with
+ *   lower="1" upper="*".  We honour the EMOF spelling `caseExpression` per
+ *   the xmi:id source of truth.
+ * @ownedAttributes
+ *   • caseExpression : Expression [1..*] -- §8.2.1.5.5: any number of caseExpression associations to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ICaseBlock extends ISwitchCase {
+  readonly caseExpression: ReadonlyArray<IExpression>;
+}
+
+export class CaseBlock extends SwitchCase implements ICaseBlock {
+  override readonly metaClass: string = "CaseBlock";
+  readonly caseExpression: ReadonlyArray<IExpression>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    body: ReadonlyArray<IStatement>;
+    caseExpression: ReadonlyArray<IExpression>;
+    isEvaluateAllCases?: boolean;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      body: args.body,
+      isEvaluateAllCases: args.isEvaluateAllCases,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.caseExpression = args.caseExpression;
+  }
+}
+
+// ─── 191. DefaultBlock (§8.2.1.5.6) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.6
+ * @xmiId ASTMCore.ASTMSyntax.Statement.DefaultBlock
+ * @metaclass DefaultBlock (concrete)
+ * @generalization SwitchCase
+ * @definition Switch cases that are executed when no other switch case in the enclosing switch statement is executed
+ * @note §8.2.1.5.6 prose: "The DefaultBlock is a subclass of OtherSytnaxObject,
+ *   and depict the fall through CaseBlock."  EMOF declares the class with no
+ *   additional ownedAttribute (inherits body and isEvaluateAllCases from
+ *   SwitchCase).
+ * @ownedAttributes (none -- inherited from SwitchCase)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDefaultBlock extends ISwitchCase {
+  // terminal — no further structural members.
+}
+
+export class DefaultBlock extends SwitchCase implements IDefaultBlock {
+  override readonly metaClass = "DefaultBlock" as const;
+}
+
+// ─── 192. TypesCatchBlock (§8.2.1.5.7.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.7.1
+ * @xmiId ASTMCore.ASTMSyntax.Statement.TypesCatchBlock
+ * @metaclass TypesCatchBlock (concrete)
+ * @generalization CatchBlock
+ * @definition Catch block that matches by one or more exception types
+ * @note §8.2.1.5.7.1 prose: "The class TypesCatchBlock is a subclass of
+ *   CatchBlock, and has any number association exceptions class Type."  PDF
+ *   Property Specification: `exceptions : Type+` -- at least one required.
+ *   EMOF lower="1" upper="*".  Definition line in PDF is empty; we synthesize
+ *   a concise one-sentence definition consistent with the structural intent.
+ * @ownedAttributes
+ *   • exceptions : Type [1..*] -- §8.2.1.5.7.1: any number of exceptions associations to Type. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ITypesCatchBlock extends ICatchBlock {
+  readonly exceptions: ReadonlyArray<IType>;
+}
+
+export class TypesCatchBlock extends CatchBlock implements ITypesCatchBlock {
+  override readonly metaClass: string = "TypesCatchBlock";
+  readonly exceptions: ReadonlyArray<IType>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    body: IStatement;
+    exceptions: ReadonlyArray<IType>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      body: args.body,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.exceptions = args.exceptions;
+  }
+}
+
+// ─── 193. VariableCatchBlock (§8.2.1.5.7.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.7.2
+ * @xmiId ASTMCore.ASTMSyntax.Statement.VariableCatchBlock
+ * @metaclass VariableCatchBlock (concrete)
+ * @generalization CatchBlock
+ * @definition Catch block that binds a caught exception to a named data definition variable
+ * @note §8.2.1.5.7.2 prose (PDF heading reads "VariablesCatchBlock", with
+ *   trailing 's', but xmi:id and EMOF declare `VariableCatchBlock`):
+ *   "The class VariablesCatchBlock is a subclass of CatchBlockObject, and
+ *   has a unary association exceptionVariable to the interior inner class
+ *   DataDefinition."  Class authored under the EMOF spelling
+ *   `VariableCatchBlock`.  exceptionVariable lower="1".  Definition line in
+ *   PDF is empty; we synthesize a concise one-sentence definition consistent
+ *   with the structural intent.
+ * @ownedAttributes
+ *   • exceptionVariable : DataDefinition [1..1] -- §8.2.1.5.7.2: unary association exceptionVariable to DataDefinition. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IVariableCatchBlock extends ICatchBlock {
+  readonly exceptionVariable: IDataDefinition;
+}
+
+export class VariableCatchBlock extends CatchBlock implements IVariableCatchBlock {
+  override readonly metaClass: string = "VariableCatchBlock";
+  readonly exceptionVariable: IDataDefinition;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    body: IStatement;
+    exceptionVariable: IDataDefinition;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      body: args.body,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.exceptionVariable = args.exceptionVariable;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END Implementer #5 (Wave 1.5). GASTM COMPLETE: 193/193 metaclasses.
+// Next wave: RDB SASTM (Wave 2) starts at class 194.
 // ═══════════════════════════════════════════════════════════════════════════
