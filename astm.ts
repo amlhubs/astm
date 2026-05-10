@@ -79,24 +79,12 @@
 // waves are loaded as a single compilation unit, downstream code may
 // downcast through the eventual structural interfaces.
 
-/** Resolved by Wave 3 (DeclarationAndDefinition). OMG xmi:id spelling: `DefintionObject`. */
-type IDefintionObject = unknown;
-/** Resolved by Wave 3 (DeclarationAndDefinition). OMG xmi:id spelling: `FunctionDefintion`. */
-type IFunctionDefintion = unknown;
 /** Resolved by Wave 4 (Expression). xmi:id: `ASTMCore.ASTMSyntax.Expression.AnnotationExpression`. */
 type IAnnotationExpression = unknown;
 /** Resolved by Wave 4 (Expression). xmi:id: `ASTMCore.ASTMSyntax.Expression.Expression`. */
 type IExpression = unknown;
-/** Resolved by Wave 3 (DeclarationAndDefinition). xmi:id: `ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name`. */
-type IName = unknown;
-/** Resolved by Wave 3 (DeclarationAndDefinition). xmi:id: `ASTMCore.ASTMSyntax.DeclarationAndDefinition.AccessKind`. */
-type IAccessKind = unknown;
-/** Resolved by Wave 3 (DeclarationAndDefinition). xmi:id: `ASTMCore.ASTMSyntax.DeclarationAndDefinition.VirtualSpecification`. */
-type IVirtualSpecification = unknown;
-/** Resolved by Wave 3 (DeclarationAndDefinition). xmi:id: `ASTMCore.ASTMSyntax.DeclarationAndDefinition.EnumLiteralDefinition`. */
-type IEnumLiteralDefinition = unknown;
-/** Resolved by Wave 3 (DeclarationAndDefinition). xmi:id: `ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDefinition`. */
-type ITypeDefinition = unknown;
+/** Resolved by Wave 5 (Statement). xmi:id: `ASTMCore.ASTMSyntax.Statement.Statement`. */
+type IStatement = unknown;
 
 // ─── 1. GASTMObject (§7.7 - §7.8, §8.2.1) ───
 /**
@@ -2331,4 +2319,1572 @@ export class UnnamedTypeReference extends TypeReference implements IUnnamedTypeR
 
 // ═══════════════════════════════════════════════════════════════════════════
 // END Implementer #2 (Wave 1.2). Next implementer starts at class 64.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BEGIN Implementer #3 (Wave 1.3): GASTM DeclarationAndDefinition — 37 metaclasses
+//
+// Scope: ASTMCore.ASTMSyntax.DeclarationAndDefinition nested package,
+// comprising the entire Declaration/Definition hierarchy enumerated by
+// §8.2.1.3.2 / §8.2.1.3.3 of formal-11-01-05 and
+// `<nestedPackage name="DeclarationAndDefinition">` of ASTM-EMOF.xml:
+//   • Abstract roots                                                —  8 classes
+//     (DefintionObject, DeclarationOrDefinition, Declaration,
+//      Definition, DataDefinition, TypeDeclaration,
+//      StorageSpecification, VirtualSpecification)
+//   • TypeDefinition + MinorSyntaxObject concrete leaves            —  4 classes
+//     (TypeDefinition, AccessKind, Name, FunctionMemberAttributes)
+//   • AccessKind concrete leaves                                    —  3 classes
+//     (Public, Private, Protected)
+//   • StorageSpecification concrete leaves                          —  5 classes
+//     (External, FileLocal, FunctionPersistent, Nodef, PerClassMember)
+//   • VirtualSpecification concrete leaf                            —  1 class
+//     (Virtual)
+//   • TypeDeclaration concrete leaves                               —  2 classes
+//     (AggregateTypeDeclaration, EnumTypeDeclaration)
+//   • TypeDefinition concrete leaves                                —  3 classes
+//     (AggregateTypeDefinition, EnumTypeDefinition, NamedTypeDefinition)
+//   • Declaration concrete leaves                                   —  3 classes
+//     (VariableDeclaration, FunctionDeclaration, FormalParameterDeclaration)
+//   • Definition concrete leaves                                    —  3 classes
+//     (EntryDefinition, EnumLiteralDefinition, FunctionDefintion)
+//   • DataDefinition concrete leaves                                —  3 classes
+//     (BitFieldDefinition, FormalParameterDefinition, VariableDefinition)
+//   • DefintionObject concrete leaves outside the above hierarchies —  2 classes
+//     (LabelDefinition, NameSpaceDefinition)
+//                                                                    ────────
+//                                                                    37 classes
+//
+// Notes on OMG spec choices observed during this wave:
+//   1. The EMOF declares `xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject"`
+//      and `xmi:id="ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDefintion"` —
+//      OMG misspells "Definition" as "Defintion" (missing second 'i')
+//      consistently across BOTH metaclasses' xmi:id values AND the
+//      attribute `name=` strings. We preserve OMG's spelling VERBATIM:
+//        • The TypeScript identifiers are `DefintionObject` and
+//          `FunctionDefintion` (matching xmi:id).
+//        • The `@xmiId` JSDoc lines carry the literal misspelling.
+//        • An `@note` flags the typo on each affected class so downstream
+//          ASTM XMI round-tripping remains lossless.
+//      The §8.2 PDF prose freely mixes `DefinitionObject` /
+//      `FunctionDefinition` (correct English) with the typo in heading
+//      titles, table headers, and BNF blocks. EMOF is the source-of-truth.
+//   2. PDF §8.2.1.3.3.1 declares Declaration's `identifierName : Name?`
+//      as optional. EMOF declares the same attribute with NO `lower=`
+//      attribute (defaulting to lower="1"), but the BNF block confirms
+//      optionality. EMOF leaves `lower` unset on Declaration's
+//      `identifierName`, which under EMOF defaulting rules collapses to
+//      `[0..1]`. We honour the optional reading consistently.
+//   3. The EMOF redeclares `identifierName` and `definitionType` on
+//      Definition (lines 142-148 of ASTM-EMOF.xml). These override the
+//      Declaration-inherited members with `lower="1"` (mandatory) on
+//      `identifierName` and an opposite-association binding on the
+//      `ofDeclaration` end. We follow the EMOF: Definition's
+//      `identifierName` is mandatory `[1..1]`; Declaration's is optional
+//      `[0..1]`.
+//   4. `Definition.ofDeclaration ↔ Declaration.defRef` is a bi-directional
+//      EMOF Association declared via `opposite=` on both attribute ends.
+//      In TypeScript we surface both directions as `readonly` properties;
+//      enforcement of the opposite-end invariant is delegated to the PRE
+//      engine consuming this surface (not enforced at the type-system
+//      level — TypeScript has no notion of `opposite` associations).
+//   5. `FunctionDefintion.opensScope ↔ FunctionScope.scopeOpenedBy` is
+//      similarly a bi-directional EMOF Association. Both ends are
+//      declared `lower="1"` (mandatory). Wave 1.1 already declared the
+//      FunctionScope side; we now close the loop on the
+//      FunctionDefintion side.
+//   6. PDF §8.2.1.3.3.4 names the namespace-definition metaclass
+//      `NamespaceDefinition` (lowercase 's'). EMOF spells it
+//      `NameSpaceDefinition` (capital 'S' in the middle), mirroring
+//      Wave 1.2's `NameSpaceType` choice. We honour EMOF
+//      source-of-truth: TypeScript identifier `NameSpaceDefinition`,
+//      `@xmiId` preserves EMOF spelling, `@note` flags both spellings.
+//   7. Stale forward-shadow aliases (`IDefintionObject`,
+//      `IFunctionDefintion`, `IName`, `IAccessKind`,
+//      `IVirtualSpecification`, `IEnumLiteralDefinition`,
+//      `ITypeDefinition`) declared by Wave 1.1's alias block have been
+//      REMOVED because this wave authors the real interfaces. The
+//      remaining forward shadows (`IAnnotationExpression`, `IExpression`,
+//      `IStatement`) are still consumed by Wave 4 (Expression) and
+//      Wave 5 (Statement).
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── 64. DefintionObject (§8.2.1.3.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject
+ * @metaclass DefintionObject (abstract)
+ * @generalization GASTMSyntaxObject
+ * @definition Constructs that define entities
+ * @note OMG spells this metaclass `DefintionObject` (missing the second 'i')
+ *   uniformly in the EMOF `xmi:id` value and `name=` attribute. The PDF prose
+ *   heading at §8.2.1.3.2 reads `DefinitionObject` (correct English) but the
+ *   EMOF is the normative source-of-truth. The TypeScript identifier preserves
+ *   OMG's misspelling so the metaclass surface round-trips losslessly through
+ *   the ASTM-EMOF.xml machine-consumable artifact.
+ * @ownedAttributes (none -- all attributes inherited from GASTMSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDefintionObject extends IGASTMSyntaxObject {
+  // structural marker — concrete subclasses (TypeDefinition, NameSpaceDefinition,
+  // LabelDefinition, TypeDeclaration, and the DeclarationOrDefinition hierarchy)
+  // carry their own attribute members.
+}
+
+export abstract class DefintionObject extends GASTMSyntaxObject implements IDefintionObject {
+  override readonly metaClass: string = "DefintionObject";
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+  }
+}
+
+// ─── 65. DeclarationOrDefinition (§8.2.1.3.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.DeclarationOrDefinition
+ * @metaclass DeclarationOrDefinition (abstract)
+ * @generalization DefintionObject
+ * @definition Declarations and definitions
+ * @note §8.2.1.3.3 prose: "DeclarationOrDefinition is a subclass of
+ *   GASTMSyntaxObject and has immediate subclasses Declaration, Definition.
+ *   DeclarationOrDefinition has unary association storageSpecifiers to class
+ *   StorageSpecification, unary association accessKind to class AccessKind,
+ *   unary property linkageSpecifier to primitive String." EMOF spells the
+ *   association `storageSpecifier` (singular) — we honour EMOF.
+ * @ownedAttributes
+ *   • linkageSpecifier : String                [0..1] -- §8.2.1.3.3: unary property linkageSpecifier to primitive String. EMOF has no `lower=`.
+ *   • accessKind       : AccessKind            [1..1] -- §8.2.1.3.3: unary association accessKind to AccessKind. EMOF lower="1".
+ *   • storageSpecifier : StorageSpecification  [1..1] -- §8.2.1.3.3: unary association storageSpecifier(s) to StorageSpecification. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDeclarationOrDefinition extends IDefintionObject {
+  readonly linkageSpecifier?: string;
+  readonly accessKind: IAccessKind;
+  readonly storageSpecifier: IStorageSpecification;
+}
+
+export abstract class DeclarationOrDefinition extends DefintionObject implements IDeclarationOrDefinition {
+  override readonly metaClass: string = "DeclarationOrDefinition";
+  readonly linkageSpecifier?: string;
+  readonly accessKind: IAccessKind;
+  readonly storageSpecifier: IStorageSpecification;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    linkageSpecifier?: string;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.accessKind = args.accessKind;
+    this.storageSpecifier = args.storageSpecifier;
+    this.linkageSpecifier = args.linkageSpecifier;
+  }
+}
+
+// ─── 66. Declaration (§8.2.1.3.3.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.Declaration
+ * @metaclass Declaration (abstract)
+ * @generalization DeclarationOrDefinition
+ * @definition Constructs that declare entities without defining them
+ * @note §8.2.1.3.3.1 prose: "Declaration is a subclass of DeclarationOrDefinition
+ *   and has immediate subclasses VariableDeclaration and FunctionDeclaration
+ *   and FormalParameterDeclaration. Declaration has unary semantic association
+ *   defRef to Definition (This association is hidden below, but is shown above).
+ *   Declaration has optional unary association identifierName to class Name."
+ *   EMOF declares `declarationType : TypeReference [1..1]` on Declaration.
+ *   `defRef ↔ Definition.ofDeclaration` is a bi-directional EMOF Association
+ *   (`opposite=` declared on both ends); TypeScript surfaces both directions
+ *   as `readonly` properties.
+ * @ownedAttributes
+ *   • identifierName  : Name           [0..1] -- §8.2.1.3.3.1: optional unary association identifierName to Name. EMOF has no `lower=`.
+ *   • declarationType : TypeReference  [1..1] -- §8.2.1.3.3.1: unary association declarationType to TypeReference. EMOF lower="1".
+ *   • defRef          : Definition     [1..1] -- §8.2.1.3.3.1: semantic association defRef to Definition. EMOF lower="1" + opposite=Definition.ofDeclaration.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDeclaration extends IDeclarationOrDefinition {
+  readonly identifierName?: IName;
+  readonly declarationType: ITypeReference;
+  readonly defRef: IDefinition;
+}
+
+export abstract class Declaration extends DeclarationOrDefinition implements IDeclaration {
+  override readonly metaClass: string = "Declaration";
+  readonly identifierName?: IName;
+  readonly declarationType: ITypeReference;
+  readonly defRef: IDefinition;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    declarationType: ITypeReference;
+    defRef: IDefinition;
+    linkageSpecifier?: string;
+    identifierName?: IName;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      linkageSpecifier: args.linkageSpecifier,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.declarationType = args.declarationType;
+    this.defRef = args.defRef;
+    this.identifierName = args.identifierName;
+  }
+}
+
+// ─── 67. Definition (§8.2.1.3.3.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.Definition
+ * @metaclass Definition (abstract)
+ * @generalization DeclarationOrDefinition
+ * @definition Constructs that declare entities as they also define them
+ * @note §8.2.1.3.3.2 prose: "Definition is a subclass of DeclarationOrDefinition,
+ *   and has immediate subclasses FunctionDefinition, EntryDefinition,
+ *   DataDefinition, EnumLiteralDefinition. Definition has unary association
+ *   unary association identifierName to class Name, and optional unary
+ *   association definitionType to TypeReference." EMOF declares
+ *   `identifierName : Name` with `lower="1"` here, overriding Declaration's
+ *   optional inheritance; `definitionType : TypeReference` is optional;
+ *   `ofDeclaration : Declaration` is mandatory (`lower="1"`) and carries
+ *   `opposite=Declaration.defRef`.
+ * @ownedAttributes
+ *   • identifierName : Name          [1..1] -- §8.2.1.3.3.2: unary association identifierName to Name. EMOF lower="1" (mandatory override).
+ *   • definitionType : TypeReference [0..1] -- §8.2.1.3.3.2: optional unary association definitionType to TypeReference. EMOF has no `lower=`.
+ *   • ofDeclaration  : Declaration   [1..1] -- §8.2.1.3.3.2: association ofDeclaration to Declaration. EMOF lower="1" + opposite=Declaration.defRef.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDefinition extends IDeclarationOrDefinition {
+  readonly identifierName: IName;
+  readonly definitionType?: ITypeReference;
+  readonly ofDeclaration: IDeclaration;
+}
+
+export abstract class Definition extends DeclarationOrDefinition implements IDefinition {
+  override readonly metaClass: string = "Definition";
+  readonly identifierName: IName;
+  readonly definitionType?: ITypeReference;
+  readonly ofDeclaration: IDeclaration;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      linkageSpecifier: args.linkageSpecifier,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.identifierName = args.identifierName;
+    this.ofDeclaration = args.ofDeclaration;
+    this.definitionType = args.definitionType;
+  }
+}
+
+// ─── 68. DataDefinition (§8.2.1.3.3.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.2.3
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.DataDefinition
+ * @metaclass DataDefinition (abstract)
+ * @generalization Definition
+ * @definition Definitions involving data
+ * @note §8.2.1.3.3.2.3 prose: "DataDefinition is a subclass of Definition, and
+ *   has subclasses VariableDefinition, FormalParameter, and BitFieldDefinition.
+ *   DataDefinition has unary property isMutable to primitive Boolean, and
+ *   unary association initialValue to Expression."
+ * @ownedAttributes
+ *   • isMutable    : Boolean    [0..1] -- §8.2.1.3.3.2.3: unary property isMutable to primitive Boolean. EMOF has no `lower=`.
+ *   • initialValue : Expression [0..1] -- §8.2.1.3.3.2.3: unary association initialValue to Expression. EMOF has no `lower=` (PDF marks Expression?).
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IDataDefinition extends IDefinition {
+  readonly isMutable?: boolean;
+  readonly initialValue?: IExpression;
+}
+
+export abstract class DataDefinition extends Definition implements IDataDefinition {
+  override readonly metaClass: string = "DataDefinition";
+  readonly isMutable?: boolean;
+  readonly initialValue?: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    isMutable?: boolean;
+    initialValue?: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.isMutable = args.isMutable;
+    this.initialValue = args.initialValue;
+  }
+}
+
+// ─── 69. TypeDeclaration (§8.2.1.3.3.6) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.6
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDeclaration
+ * @metaclass TypeDeclaration (abstract)
+ * @generalization DefintionObject
+ * @definition Forward Declaration of user-defined types (aggregates and enumerations)
+ * @note §8.2.1.3.3.6 prose: "TypeDeclaration is a subclass of DefinitionObject
+ *   and has unary association typeReference to class TypeReference, and
+ *   subclasses AggregateTypeDeclaration, and EnumTypeDeclaration."
+ * @ownedAttributes
+ *   • typeReference : TypeReference [1..1] -- §8.2.1.3.3.6: unary association typeReference to TypeReference. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ITypeDeclaration extends IDefintionObject {
+  readonly typeReference: ITypeReference;
+}
+
+export abstract class TypeDeclaration extends DefintionObject implements ITypeDeclaration {
+  override readonly metaClass: string = "TypeDeclaration";
+  readonly typeReference: ITypeReference;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    typeReference: ITypeReference;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.typeReference = args.typeReference;
+  }
+}
+
+// ─── 70. StorageSpecification (§8.2.1.5.9.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.StorageSpecification
+ * @metaclass StorageSpecification (abstract)
+ * @generalization MinorSyntaxObject
+ * @definition a property of data that depicts how it is is allocated
+ * @note §8.2.1.5.9.2 prose: "StorageSpecification is a subclass of
+ *   OtherSytnaxObject [sic — PDF typo for MinorSyntaxObject; EMOF resolves
+ *   superClass to MinorSyntaxObject], and has subclasses External,
+ *   FunctionPersistent, FileLocal, PerClassMember, NoDef." Note the
+ *   EMOF spelling `Nodef` (lowercase 'd') for the metaclass that the PDF
+ *   prose spells `NoDef` (capital 'D').
+ * @ownedAttributes (none)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IStorageSpecification extends IMinorSyntaxObject {
+  // structural marker — concrete subclasses (External, FileLocal,
+  // FunctionPersistent, Nodef, PerClassMember) carry no further attributes.
+}
+
+export abstract class StorageSpecification extends MinorSyntaxObject implements IStorageSpecification {
+  override readonly metaClass: string = "StorageSpecification";
+}
+
+// ─── 71. VirtualSpecification (§8.2.1.5.9.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.3
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.VirtualSpecification
+ * @metaclass VirtualSpecification (abstract)
+ * @generalization MinorSyntaxObject
+ * @definition Specifications of the virtual characteristics of a function member
+ * @note §8.2.1.5.9.3 prose: "VirtualSpecification is subclass of
+ *   MinorSyntaxObject that is used for specifying if a class member is virtual."
+ *   Has terminal subclass Virtual.
+ * @ownedAttributes (none)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IVirtualSpecification extends IMinorSyntaxObject {
+  // structural marker — concrete subclass (Virtual) carries no further attributes.
+}
+
+export abstract class VirtualSpecification extends MinorSyntaxObject implements IVirtualSpecification {
+  override readonly metaClass: string = "VirtualSpecification";
+}
+
+// ─── 72. TypeDefinition (§8.2.1.3.3.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.3
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.TypeDefinition
+ * @metaclass TypeDefinition (concrete)
+ * @generalization DefintionObject
+ * @definition Definitions of types
+ * @note §8.2.1.3.3.3 prose: "TypeDefinition is a subclass of DefinitionObject
+ *   and has unary association name to class typeName, and subclasses
+ *   NamedTypeDefinition, AggregateTypeDefinition, and EnumTypeDefinition."
+ *   EMOF declares TypeDefinition without `isAbstract="true"`, so it is
+ *   concrete under EMOF defaulting rules (a deviation from typical OO
+ *   modelling that would mark a class with subclasses as abstract). We
+ *   honour the EMOF source-of-truth.
+ * @ownedAttributes
+ *   • typeName : Name [1..1] -- §8.2.1.3.3.3: unary association typeName to Name. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ITypeDefinition extends IDefintionObject {
+  readonly typeName: IName;
+}
+
+export class TypeDefinition extends DefintionObject implements ITypeDefinition {
+  override readonly metaClass: string = "TypeDefinition";
+  readonly typeName: IName;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    typeName: IName;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.typeName = args.typeName;
+  }
+}
+
+// ─── 73. AccessKind (§8.2.1.5.9.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.4
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.AccessKind
+ * @metaclass AccessKind (concrete)
+ * @generalization MinorSyntaxObject
+ * @definition Specifications of the kind of access provided by a member or base class
+ * @note §8.2.1.5.9.4 prose: "AccessKind is subclass of MinorSyntaxObject used
+ *   for specifying that class member is Public, Protected of Private and has
+ *   subclasses Public, Protected, and Private for those denotations." EMOF
+ *   declares AccessKind without `isAbstract="true"`, so it is concrete under
+ *   EMOF defaulting rules.
+ * @ownedAttributes (none)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IAccessKind extends IMinorSyntaxObject {
+  // structural marker — concrete subclasses (Public, Private, Protected) carry
+  // no further attributes.
+}
+
+export class AccessKind extends MinorSyntaxObject implements IAccessKind {
+  override readonly metaClass: string = "AccessKind";
+}
+
+// ─── 74. Name (§8.2.1.5.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.3
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.Name
+ * @metaclass Name (concrete)
+ * @generalization MinorSyntaxObject
+ * @definition Names that may appear in declarations and definitions
+ * @note §8.2.1.5.3 prose: "Name is a subclass of OtherSytnaxObject [sic — PDF
+ *   typo for MinorSyntaxObject; EMOF resolves superClass to
+ *   MinorSyntaxObject], and has Unary Association nameString to Primitive
+ *   String." EMOF adds a self-referential association
+ *   `ofTypeReference : Name [1..1]` (not enumerated in the PDF Property
+ *   Specification block but present in EMOF).
+ * @ownedAttributes
+ *   • nameString      : String [0..1] -- §8.2.1.5.3: unary property nameString to primitive String. EMOF has no `lower=`.
+ *   • ofTypeReference : Name   [1..1] -- §8.2.1.5.3 (EMOF only): unary association ofTypeReference to Name. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IName extends IMinorSyntaxObject {
+  readonly nameString?: string;
+  readonly ofTypeReference: IName;
+}
+
+export class Name extends MinorSyntaxObject implements IName {
+  override readonly metaClass: string = "Name";
+  readonly nameString?: string;
+  readonly ofTypeReference: IName;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    ofTypeReference: IName;
+    nameString?: string;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.ofTypeReference = args.ofTypeReference;
+    this.nameString = args.nameString;
+  }
+}
+
+// ─── 75. FunctionMemberAttributes (§8.2.1.5.9.6) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.6
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionMemberAttributes
+ * @metaclass FunctionMemberAttributes (concrete)
+ * @generalization MinorSyntaxObject
+ * @definition Specifies various properties of function members
+ * @note §8.2.1.5.9.6 prose: "The FunctionMemberAttributes is a subclass of
+ *   MinorSyntaxObject used for attributing members of classes.
+ *   FunctionMemberAttributes has Boolean properties isFriend, isInLine and
+ *   isThisConst to depict the corresponding member properties and the
+ *   association virtualSpecifier to the class VirtualSpecification to depict
+ *   whether the member is virtual." EMOF spelling is `isInline` (lowercase
+ *   'l'), not `isInLine`. We honour EMOF.
+ * @ownedAttributes
+ *   • isFriend         : Boolean              [0..1] -- §8.2.1.5.9.6: unary Boolean property isFriend. EMOF has no `lower=`.
+ *   • isInline         : Boolean              [0..1] -- §8.2.1.5.9.6: unary Boolean property isInline. EMOF spelling (PDF: isInLine).
+ *   • isThisConst      : Boolean              [0..1] -- §8.2.1.5.9.6: unary Boolean property isThisConst.
+ *   • virtualSpecifier : VirtualSpecification [0..1] -- §8.2.1.5.9.6: unary association virtualSpecifier to VirtualSpecification.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IFunctionMemberAttributes extends IMinorSyntaxObject {
+  readonly isFriend?: boolean;
+  readonly isInline?: boolean;
+  readonly isThisConst?: boolean;
+  readonly virtualSpecifier?: IVirtualSpecification;
+}
+
+export class FunctionMemberAttributes extends MinorSyntaxObject implements IFunctionMemberAttributes {
+  override readonly metaClass: string = "FunctionMemberAttributes";
+  readonly isFriend?: boolean;
+  readonly isInline?: boolean;
+  readonly isThisConst?: boolean;
+  readonly virtualSpecifier?: IVirtualSpecification;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    isFriend?: boolean;
+    isInline?: boolean;
+    isThisConst?: boolean;
+    virtualSpecifier?: IVirtualSpecification;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.isFriend = args.isFriend;
+    this.isInline = args.isInline;
+    this.isThisConst = args.isThisConst;
+    this.virtualSpecifier = args.virtualSpecifier;
+  }
+}
+
+// ─── 76. Public (§8.2.1.5.9.4.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.4.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.Public
+ * @metaclass Public (concrete)
+ * @generalization AccessKind
+ * @definition Specifies that the associated member or base class provides public access
+ * @note §8.2.1.5.9.4.1 prose: "Public is subclass of AccessKind used for
+ *   specifying that class member is Public."
+ * @ownedAttributes (none -- all attributes inherited from AccessKind)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IPublic extends IAccessKind {
+  // terminal — no further structural members.
+}
+
+export class Public extends AccessKind implements IPublic {
+  override readonly metaClass = "Public" as const;
+}
+
+// ─── 77. Private (§8.2.1.5.9.4.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.4.3
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.Private
+ * @metaclass Private (concrete)
+ * @generalization AccessKind
+ * @definition Specifies that the associated member or base class provides private access
+ * @note §8.2.1.5.9.4.3 prose: "A private is subclass of AccessKind used for
+ *   specifying that class member is Private."
+ * @ownedAttributes (none -- all attributes inherited from AccessKind)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IPrivate extends IAccessKind {
+  // terminal — no further structural members.
+}
+
+export class Private extends AccessKind implements IPrivate {
+  override readonly metaClass = "Private" as const;
+}
+
+// ─── 78. Protected (§8.2.1.5.9.4.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.4.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.Protected
+ * @metaclass Protected (concrete)
+ * @generalization AccessKind
+ * @definition Specifies that the associated member or base class provides protected access
+ * @note §8.2.1.5.9.4.2 prose: "Protected is subclass of AccessKind used for
+ *   specifying that class member is Protected."
+ * @ownedAttributes (none -- all attributes inherited from AccessKind)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IProtected extends IAccessKind {
+  // terminal — no further structural members.
+}
+
+export class Protected extends AccessKind implements IProtected {
+  override readonly metaClass = "Protected" as const;
+}
+
+// ─── 79. External (§8.2.1.5.9.2.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.2.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.External
+ * @metaclass External (concrete)
+ * @generalization StorageSpecification
+ * @definition depicts storage that is external
+ * @note §8.2.1.5.9.2.1 prose: "External is a subclass of StorageSpecification
+ *   and depicts storage that is external."
+ * @ownedAttributes (none -- all attributes inherited from StorageSpecification)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IExternal extends IStorageSpecification {
+  // terminal — no further structural members.
+}
+
+export class External extends StorageSpecification implements IExternal {
+  override readonly metaClass = "External" as const;
+}
+
+// ─── 80. FileLocal (§8.2.1.5.9.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.2.3
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.FileLocal
+ * @metaclass FileLocal (concrete)
+ * @generalization StorageSpecification
+ * @definition depicts storage that is allocated and local within a file.
+ * @note §8.2.1.5.9.2.3 prose: "FileLocal is a subclass of StorageSpecification
+ *   and depicts storage that is allocated and local within a file."
+ * @ownedAttributes (none -- all attributes inherited from StorageSpecification)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IFileLocal extends IStorageSpecification {
+  // terminal — no further structural members.
+}
+
+export class FileLocal extends StorageSpecification implements IFileLocal {
+  override readonly metaClass = "FileLocal" as const;
+}
+
+// ─── 81. FunctionPersistent (§8.2.1.5.9.2.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.2.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionPersistent
+ * @metaclass FunctionPersistent (concrete)
+ * @generalization StorageSpecification
+ * @definition depicts storage that is allocated and persists within a function.
+ * @note §8.2.1.5.9.2.2 prose: "FunctionPersistent is a subclass of
+ *   StorageSpecification and depicts storage that is allocated and persists
+ *   within a function."
+ * @ownedAttributes (none -- all attributes inherited from StorageSpecification)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IFunctionPersistent extends IStorageSpecification {
+  // terminal — no further structural members.
+}
+
+export class FunctionPersistent extends StorageSpecification implements IFunctionPersistent {
+  override readonly metaClass = "FunctionPersistent" as const;
+}
+
+// ─── 82. Nodef (§8.2.1.5.9.2.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.2.5
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.Nodef
+ * @metaclass Nodef (concrete)
+ * @generalization StorageSpecification
+ * @definition depicts storage for which the allocator is not defined.
+ * @note §8.2.1.5.9.2.5 prose: "NoDef is a subclass of StorageSpecification and
+ *   depicts storage for which the allocator is not defined." The EMOF spells
+ *   the metaclass `Nodef` (lowercase 'd'); the PDF prose spells it `NoDef`.
+ *   We honour the EMOF source-of-truth — TypeScript identifier `Nodef`.
+ * @ownedAttributes (none -- all attributes inherited from StorageSpecification)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface INodef extends IStorageSpecification {
+  // terminal — no further structural members.
+}
+
+export class Nodef extends StorageSpecification implements INodef {
+  override readonly metaClass = "Nodef" as const;
+}
+
+// ─── 83. PerClassMember (§8.2.1.5.9.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.2.4
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.PerClassMember
+ * @metaclass PerClassMember (concrete)
+ * @generalization StorageSpecification
+ * @definition depicts storage that is allocated for each class
+ * @note §8.2.1.5.9.2.4 prose: "PerClassMember is a subclass of
+ *   StorageSpecification and depicts storage that is allocated for each
+ *   class."
+ * @ownedAttributes (none -- all attributes inherited from StorageSpecification)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IPerClassMember extends IStorageSpecification {
+  // terminal — no further structural members.
+}
+
+export class PerClassMember extends StorageSpecification implements IPerClassMember {
+  override readonly metaClass = "PerClassMember" as const;
+}
+
+// ─── 84. Virtual (§8.2.1.5.9.3.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.5.9.3.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.Virtual
+ * @metaclass Virtual (concrete)
+ * @generalization VirtualSpecification
+ * @definition Specifies that the associated function member is virtual
+ * @note §8.2.1.5.9.3.1 prose: "Virtual is subclass of VirtualSpecification used
+ *   for specifying that class member is virtual."
+ * @ownedAttributes (none -- all attributes inherited from VirtualSpecification)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IVirtual extends IVirtualSpecification {
+  // terminal — no further structural members.
+}
+
+export class Virtual extends VirtualSpecification implements IVirtual {
+  override readonly metaClass = "Virtual" as const;
+}
+
+// ─── 85. AggregateTypeDeclaration (§8.2.1.3.3.6.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.6.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.AggregateTypeDeclaration
+ * @metaclass AggregateTypeDeclaration (concrete)
+ * @generalization TypeDeclaration
+ * @definition Forward declaration of AggregateType
+ * @note §8.2.1.3.3.6.1 prose: "AggregateTypeDeclaration is a subclass
+ *   TypeDeclaration."
+ * @ownedAttributes (none -- all attributes inherited from TypeDeclaration)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IAggregateTypeDeclaration extends ITypeDeclaration {
+  // terminal — no further structural members.
+}
+
+export class AggregateTypeDeclaration extends TypeDeclaration implements IAggregateTypeDeclaration {
+  override readonly metaClass = "AggregateTypeDeclaration" as const;
+}
+
+// ─── 86. EnumTypeDeclaration (§8.2.1.3.3.6.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.6.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.EnumTypeDeclaration
+ * @metaclass EnumTypeDeclaration (concrete)
+ * @generalization TypeDeclaration
+ * @definition Forward declaration of EnumerationType
+ * @note §8.2.1.3.3.6.2 prose: "EnumTypeDeclaration is a subclass
+ *   TypeDeclaration."
+ * @ownedAttributes (none -- all attributes inherited from TypeDeclaration)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IEnumTypeDeclaration extends ITypeDeclaration {
+  // terminal — no further structural members.
+}
+
+export class EnumTypeDeclaration extends TypeDeclaration implements IEnumTypeDeclaration {
+  override readonly metaClass = "EnumTypeDeclaration" as const;
+}
+
+// ─── 87. AggregateTypeDefinition (§8.2.1.3.3.3.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.3.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.AggregateTypeDefinition
+ * @metaclass AggregateTypeDefinition (concrete)
+ * @generalization TypeDefinition
+ * @definition Definitions of aggregate types
+ * @note §8.2.1.3.3.3.2 prose: "AggregateTypeDefinition is a subclass
+ *   TypeDefinition and has unary aggregateType to AggregateType."
+ * @ownedAttributes
+ *   • aggregateType : AggregateType [1..1] -- §8.2.1.3.3.3.2: unary association aggregateType to AggregateType. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IAggregateTypeDefinition extends ITypeDefinition {
+  readonly aggregateType: IAggregateType;
+}
+
+export class AggregateTypeDefinition extends TypeDefinition implements IAggregateTypeDefinition {
+  override readonly metaClass = "AggregateTypeDefinition" as const;
+  readonly aggregateType: IAggregateType;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    typeName: IName;
+    aggregateType: IAggregateType;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      typeName: args.typeName,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.aggregateType = args.aggregateType;
+  }
+}
+
+// ─── 88. EnumTypeDefinition (§8.2.1.3.3.3.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.3.3
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.EnumTypeDefinition
+ * @metaclass EnumTypeDefinition (concrete)
+ * @generalization TypeDefinition
+ * @definition Definitions of enumeration types
+ * @note §8.2.1.3.3.3.3 prose: "EnumTypeDefinition is a subclass TypeDefinition
+ *   and has unary association definitionType to EnumType."
+ * @ownedAttributes
+ *   • definitionType : EnumType [1..1] -- §8.2.1.3.3.3.3: unary association definitionType to EnumType (overrides Definition's TypeReference). EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IEnumTypeDefinition extends ITypeDefinition {
+  readonly definitionType: IEnumType;
+}
+
+export class EnumTypeDefinition extends TypeDefinition implements IEnumTypeDefinition {
+  override readonly metaClass = "EnumTypeDefinition" as const;
+  readonly definitionType: IEnumType;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    typeName: IName;
+    definitionType: IEnumType;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      typeName: args.typeName,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.definitionType = args.definitionType;
+  }
+}
+
+// ─── 89. NamedTypeDefinition (§8.2.1.3.3.3.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.3.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.NamedTypeDefinition
+ * @metaclass NamedTypeDefinition (concrete)
+ * @generalization TypeDefinition
+ * @definition Definitions of types to be referred to by a specified name
+ * @note §8.2.1.3.3.3.1 prose: "NamedTypeDefinition is a subclass TypeDefinition
+ *   and has unary definitionType to NamedType."
+ * @ownedAttributes
+ *   • definitionType : NamedType [1..1] -- §8.2.1.3.3.3.1: unary association definitionType to NamedType (overrides Definition's TypeReference). EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface INamedTypeDefinition extends ITypeDefinition {
+  readonly definitionType: INamedType;
+}
+
+export class NamedTypeDefinition extends TypeDefinition implements INamedTypeDefinition {
+  override readonly metaClass = "NamedTypeDefinition" as const;
+  readonly definitionType: INamedType;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    typeName: IName;
+    definitionType: INamedType;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      typeName: args.typeName,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.definitionType = args.definitionType;
+  }
+}
+
+// ─── 90. VariableDeclaration (§8.2.1.3.3.1.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.1.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.VariableDeclaration
+ * @metaclass VariableDeclaration (concrete)
+ * @generalization Declaration
+ * @definition Variable declarations
+ * @note §8.2.1.3.3.1.2 prose: "VariableDeclaration is a subclass of Declaration
+ *   and has unary property isMutable to Boolean."
+ * @ownedAttributes
+ *   • isMutable : Boolean [0..1] -- §8.2.1.3.3.1.2: unary property isMutable to primitive Boolean. EMOF has no `lower=`.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IVariableDeclaration extends IDeclaration {
+  readonly isMutable?: boolean;
+}
+
+export class VariableDeclaration extends Declaration implements IVariableDeclaration {
+  override readonly metaClass = "VariableDeclaration" as const;
+  readonly isMutable?: boolean;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    declarationType: ITypeReference;
+    defRef: IDefinition;
+    linkageSpecifier?: string;
+    identifierName?: IName;
+    isMutable?: boolean;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      declarationType: args.declarationType,
+      defRef: args.defRef,
+      linkageSpecifier: args.linkageSpecifier,
+      identifierName: args.identifierName,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.isMutable = args.isMutable;
+  }
+}
+
+// ─── 91. FunctionDeclaration (§8.2.1.3.3.1.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.1.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDeclaration
+ * @metaclass FunctionDeclaration (concrete)
+ * @generalization Declaration
+ * @definition Function declarations
+ * @note §8.2.1.3.3.1.1 prose: "FunctionDeclaration is a subclass of
+ *   Declaration, and has zero to any number of association formalParameters to
+ *   class FormalParameterDeclaration, optional unary association
+ *   functionMemberAttributes to class FunctionMemberAttributes."
+ * @ownedAttributes
+ *   • formalParameters         : FormalParameterDeclaration [0..*] -- §8.2.1.3.3.1.1: zero to any number of formalParameters associations to FormalParameterDeclaration.
+ *   • functionMemberAttributes : FunctionMemberAttributes   [0..1] -- §8.2.1.3.3.1.1: optional unary association functionMemberAttributes to FunctionMemberAttributes.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IFunctionDeclaration extends IDeclaration {
+  readonly formalParameters: ReadonlyArray<IFormalParameterDeclaration>;
+  readonly functionMemberAttributes?: IFunctionMemberAttributes;
+}
+
+export class FunctionDeclaration extends Declaration implements IFunctionDeclaration {
+  override readonly metaClass = "FunctionDeclaration" as const;
+  readonly formalParameters: ReadonlyArray<IFormalParameterDeclaration>;
+  readonly functionMemberAttributes?: IFunctionMemberAttributes;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    declarationType: ITypeReference;
+    defRef: IDefinition;
+    linkageSpecifier?: string;
+    identifierName?: IName;
+    formalParameters?: ReadonlyArray<IFormalParameterDeclaration>;
+    functionMemberAttributes?: IFunctionMemberAttributes;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      declarationType: args.declarationType,
+      defRef: args.defRef,
+      linkageSpecifier: args.linkageSpecifier,
+      identifierName: args.identifierName,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.formalParameters = args.formalParameters ?? [];
+    this.functionMemberAttributes = args.functionMemberAttributes;
+  }
+}
+
+// ─── 92. FormalParameterDeclaration (§8.2.1.3.3.1.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.1.3
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.FormalParameterDeclaration
+ * @metaclass FormalParameterDeclaration (concrete)
+ * @generalization Declaration
+ * @definition Formal Parameter Declarations, appearing in function declarations
+ * @note §8.2.1.3.3.1.3 prose: "FormalParameterDeclaration is a subclass of
+ *   Declaration."
+ * @ownedAttributes (none -- all attributes inherited from Declaration)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IFormalParameterDeclaration extends IDeclaration {
+  // terminal — no further structural members.
+}
+
+export class FormalParameterDeclaration extends Declaration implements IFormalParameterDeclaration {
+  override readonly metaClass = "FormalParameterDeclaration" as const;
+}
+
+// ─── 93. EntryDefinition (§8.2.1.3.3.2.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.2.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.EntryDefinition
+ * @metaclass EntryDefinition (concrete)
+ * @generalization Definition
+ * @definition Subprogram entry definitions
+ * @note §8.2.1.3.3.2.2 prose: "EntryDefinition is a subclass of Definition,
+ *   and has unary association Body to class Statement. EntryDefinition has
+ *   zero to any number association FormalParameters to class FormalParameter."
+ *   EMOF types `formalParameters` as `FormalParameterDefinition` (not
+ *   `FormalParameter` — that is a PDF-prose shorthand).
+ * @ownedAttributes
+ *   • formalParameters : FormalParameterDefinition [0..*] -- §8.2.1.3.3.2.2: zero to any number of formalParameters associations to FormalParameterDefinition.
+ *   • body             : Statement                 [0..*] -- §8.2.1.3.3.2.2: zero to any number of body associations to Statement.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IEntryDefinition extends IDefinition {
+  readonly formalParameters: ReadonlyArray<IFormalParameterDefinition>;
+  readonly body: ReadonlyArray<IStatement>;
+}
+
+export class EntryDefinition extends Definition implements IEntryDefinition {
+  override readonly metaClass = "EntryDefinition" as const;
+  readonly formalParameters: ReadonlyArray<IFormalParameterDefinition>;
+  readonly body: ReadonlyArray<IStatement>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    formalParameters?: ReadonlyArray<IFormalParameterDefinition>;
+    body?: ReadonlyArray<IStatement>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.formalParameters = args.formalParameters ?? [];
+    this.body = args.body ?? [];
+  }
+}
+
+// ─── 94. EnumLiteralDefinition (§8.2.1.3.3.2.7) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.2.7
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.EnumLiteralDefinition
+ * @metaclass EnumLiteralDefinition (concrete)
+ * @generalization Definition
+ * @definition Definitions of enumerals (members of enumerated types)
+ * @note §8.2.1.3.3.2.7 prose: "EnumLiteralDefinition is a subclass of
+ *   Definition, and has unary association value to class Expression."
+ * @ownedAttributes
+ *   • value : Expression [0..1] -- §8.2.1.3.3.2.7: unary association value to Expression. EMOF has no `lower=` (PDF marks Expression?).
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IEnumLiteralDefinition extends IDefinition {
+  readonly value?: IExpression;
+}
+
+export class EnumLiteralDefinition extends Definition implements IEnumLiteralDefinition {
+  override readonly metaClass = "EnumLiteralDefinition" as const;
+  readonly value?: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    value?: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.value = args.value;
+  }
+}
+
+// ─── 95. FunctionDefintion (§8.2.1.3.3.2.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.2.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.FunctionDefintion
+ * @metaclass FunctionDefintion (concrete)
+ * @generalization Definition
+ * @definition Subprogram definitions
+ * @note OMG spells this metaclass `FunctionDefintion` (missing the second 'i')
+ *   uniformly in the EMOF `xmi:id` value and `name=` attribute. The PDF
+ *   §8.2.1.3.3.2.1 heading and prose read `FunctionDefinition` (correct
+ *   English). The TypeScript identifier preserves OMG's misspelling so the
+ *   metaclass surface round-trips losslessly through ASTM-EMOF.xml. The
+ *   `opensScope ↔ FunctionScope.scopeOpenedBy` bi-directional Association
+ *   closes the loop with Wave 1.1's FunctionScope side.
+ * @ownedAttributes
+ *   • returnType               : TypeReference            [0..1] -- §8.2.1.3.3.2.1: unary association returnType to TypeReference. EMOF has no `lower=`.
+ *   • formalParameters         : FormalParameterDefinition [0..*] -- §8.2.1.3.3.2.1: zero to any number of formalParameters associations to FormalParameterDefinition.
+ *   • functionMemberAttributes : FunctionMemberAttributes  [0..1] -- §8.2.1.3.3.2.1: optional unary association functionMemberAttributes to FunctionMemberAttributes.
+ *   • opensScope               : FunctionScope             [1..1] -- §8.2.1.3.3.2.1: optional unary semantic association opensScope to FunctionScope. EMOF lower="1" + opposite=FunctionScope.scopeOpenedBy.
+ *   • body                     : Statement                 [1..1] -- §8.2.1.3.3.2.1: unary association body to Statement. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IFunctionDefintion extends IDefinition {
+  readonly returnType?: ITypeReference;
+  readonly formalParameters: ReadonlyArray<IFormalParameterDefinition>;
+  readonly functionMemberAttributes?: IFunctionMemberAttributes;
+  readonly opensScope: IFunctionScope;
+  readonly body: IStatement;
+}
+
+export class FunctionDefintion extends Definition implements IFunctionDefintion {
+  override readonly metaClass = "FunctionDefintion" as const;
+  readonly returnType?: ITypeReference;
+  readonly formalParameters: ReadonlyArray<IFormalParameterDefinition>;
+  readonly functionMemberAttributes?: IFunctionMemberAttributes;
+  readonly opensScope: IFunctionScope;
+  readonly body: IStatement;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    opensScope: IFunctionScope;
+    body: IStatement;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    returnType?: ITypeReference;
+    formalParameters?: ReadonlyArray<IFormalParameterDefinition>;
+    functionMemberAttributes?: IFunctionMemberAttributes;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.returnType = args.returnType;
+    this.formalParameters = args.formalParameters ?? [];
+    this.functionMemberAttributes = args.functionMemberAttributes;
+    this.opensScope = args.opensScope;
+    this.body = args.body;
+  }
+}
+
+// ─── 96. BitFieldDefinition (§8.2.1.3.3.2.6) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.2.6
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.BitFieldDefinition
+ * @metaclass BitFieldDefinition (concrete)
+ * @generalization DataDefinition
+ * @definition Definitions of bit-field data
+ * @note §8.2.1.3.3.2.6 prose: "Bitfield is a subclass of DataDefinition, and
+ *   unary association bitfieldSize to Expression." EMOF attribute name is
+ *   `bitFieldSize` (camelCase, capital 'F'), not `bitfieldSize` as the PDF
+ *   prose says. EMOF prevails.
+ * @ownedAttributes
+ *   • bitFieldSize : Expression [1..1] -- §8.2.1.3.3.2.6: unary association bitFieldSize to Expression. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IBitFieldDefinition extends IDataDefinition {
+  readonly bitFieldSize: IExpression;
+}
+
+export class BitFieldDefinition extends DataDefinition implements IBitFieldDefinition {
+  override readonly metaClass = "BitFieldDefinition" as const;
+  readonly bitFieldSize: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    bitFieldSize: IExpression;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    isMutable?: boolean;
+    initialValue?: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      isMutable: args.isMutable,
+      initialValue: args.initialValue,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.bitFieldSize = args.bitFieldSize;
+  }
+}
+
+// ─── 97. FormalParameterDefinition (§8.2.1.3.3.2.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.2.5
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.FormalParameterDefinition
+ * @metaclass FormalParameterDefinition (concrete)
+ * @generalization DataDefinition
+ * @definition Formal parameter definitions, appearing in function definitions
+ * @note §8.2.1.3.3.2.5 prose: "FormalParameterDefinition is a subclass of
+ *   DataDefinition, and has no subclasses, no immediate associations and no
+ *   immediate properties."
+ * @ownedAttributes (none -- all attributes inherited from DataDefinition)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IFormalParameterDefinition extends IDataDefinition {
+  // terminal — no further structural members.
+}
+
+export class FormalParameterDefinition extends DataDefinition implements IFormalParameterDefinition {
+  override readonly metaClass = "FormalParameterDefinition" as const;
+}
+
+// ─── 98. VariableDefinition (§8.2.1.3.3.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.2.4
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.VariableDefinition
+ * @metaclass VariableDefinition (concrete)
+ * @generalization DataDefinition
+ * @definition Variable definitions
+ * @note §8.2.1.3.3.2.4 prose: "VariableDefinition is a subclass of
+ *   DataDefinition, and has no subclasses, no immediate associations and no
+ *   immediate properties."
+ * @ownedAttributes (none -- all attributes inherited from DataDefinition)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IVariableDefinition extends IDataDefinition {
+  // terminal — no further structural members.
+}
+
+export class VariableDefinition extends DataDefinition implements IVariableDefinition {
+  override readonly metaClass = "VariableDefinition" as const;
+}
+
+// ─── 99. LabelDefinition (§8.2.1.3.3.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.5
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.LabelDefinition
+ * @metaclass LabelDefinition (concrete)
+ * @generalization DefintionObject
+ * @definition Definitions of labels
+ * @note §8.2.1.3.3.5 prose: "LabelDefinition is a subclass of
+ *   DeclarationOrDefinition, and unary association labelName to Name, and
+ *   unary association labelType to LabelType." EMOF declares
+ *   `superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject"`
+ *   — i.e., LabelDefinition is a sibling of DeclarationOrDefinition under
+ *   DefintionObject, NOT a subclass of DeclarationOrDefinition as the PDF
+ *   prose claims. EMOF is the normative source-of-truth. The EMOF attribute
+ *   name is `labelname` (lowercase 'n'), not `labelName` as PDF says — but
+ *   the TypeScript surface follows the EMOF spelling verbatim.
+ * @ownedAttributes
+ *   • labelname : Name      [1..1] -- §8.2.1.3.3.5: unary association labelname (EMOF spelling; PDF: labelName) to Name. EMOF lower="1".
+ *   • labelType : LabelType [1..1] -- §8.2.1.3.3.5: unary association labelType to LabelType. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface ILabelDefinition extends IDefintionObject {
+  readonly labelname: IName;
+  readonly labelType: ILabelType;
+}
+
+export class LabelDefinition extends DefintionObject implements ILabelDefinition {
+  override readonly metaClass = "LabelDefinition" as const;
+  readonly labelname: IName;
+  readonly labelType: ILabelType;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    labelname: IName;
+    labelType: ILabelType;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.labelname = args.labelname;
+    this.labelType = args.labelType;
+  }
+}
+
+// ─── 100. NameSpaceDefinition (§8.2.1.3.3.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.2.1.3.3.4
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.NameSpaceDefinition
+ * @metaclass NameSpaceDefinition (concrete)
+ * @generalization DefintionObject
+ * @definition Definitions of namespaces
+ * @note §8.2.1.3.3.4 prose: "NamespaceDefinition is a subclass of
+ *   DeclarationOrDefinition, and one or more association body to class
+ *   DeclarationOrDefinition, unary association nameSpaceType to NamespaceType,
+ *   and unary association nameSpace to class Name." EMOF declares
+ *   `superClass="ASTMCore.ASTMSyntax.DeclarationAndDefinition.DefintionObject"`
+ *   (sibling of DeclarationOrDefinition under DefintionObject, NOT a subclass
+ *   of DeclarationOrDefinition as PDF claims) and types `body` to
+ *   `DefintionObject` (NOT `DeclarationOrDefinition` as PDF claims) with
+ *   `lower="1" upper="*"` (one-or-more). EMOF is the normative source-of-truth.
+ *   The metaclass spelling is `NameSpaceDefinition` (capital 'S' in the
+ *   middle) per EMOF, mirroring Wave 1.2's `NameSpaceType`; PDF prose uses
+ *   `NamespaceDefinition`.
+ * @ownedAttributes
+ *   • nameSpace     : Name              [1..1] -- §8.2.1.3.3.4: unary association nameSpace to Name. EMOF lower="1".
+ *   • body          : DefintionObject   [1..*] -- §8.2.1.3.3.4: one-or-more body associations to DefintionObject (EMOF target). EMOF lower="1" upper="*".
+ *   • nameSpaceType : NameSpaceType     [1..1] -- §8.2.1.3.3.4: unary association nameSpaceType to NameSpaceType. EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface INameSpaceDefinition extends IDefintionObject {
+  readonly nameSpace: IName;
+  readonly body: ReadonlyArray<IDefintionObject>;
+  readonly nameSpaceType: INameSpaceType;
+}
+
+export class NameSpaceDefinition extends DefintionObject implements INameSpaceDefinition {
+  override readonly metaClass = "NameSpaceDefinition" as const;
+  readonly nameSpace: IName;
+  readonly body: ReadonlyArray<IDefintionObject>;
+  readonly nameSpaceType: INameSpaceType;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    nameSpace: IName;
+    body: ReadonlyArray<IDefintionObject>;
+    nameSpaceType: INameSpaceType;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.nameSpace = args.nameSpace;
+    this.body = args.body;
+    this.nameSpaceType = args.nameSpaceType;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END Implementer #3 (Wave 1.3). Next implementer starts at class 101.
 // ═══════════════════════════════════════════════════════════════════════════
