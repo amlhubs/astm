@@ -1,7 +1,7 @@
 {
   "name": "@amlhubs/astm",
   "version": "0.0.1",
-  "description": "OMG Abstract Syntax Tree Metamodel (ASTM) 1.0 (formal/2011-01-05) — extensible TypeScript base classes and interfaces for the ASTM Core + GASTM + SASTM (C, Ada, COBOL, Fortran, Java) metamodel. Pure ASTM; downstream consumers extend through TypeScript inheritance.",
+  "description": "OMG Abstract Syntax Tree Metamodel (ASTM) 1.0 (formal/2011-01-05) — extensible TypeScript base classes and interfaces for the 193 GASTM normative metaclasses plus the 56 RDB SASTM (Annex A, non-normative) metaclasses. Pure ASTM; downstream consumers extend through TypeScript inheritance.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",

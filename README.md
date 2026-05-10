@@ -15,9 +15,11 @@
 
 ## Abstract
 
-The Abstract Syntax Tree Metamodel is the OMG specification that complements KDM by providing fine-grained, language-specific abstract-syntax representation of source code. ASTM is the AST sibling of KDM in the OMG Architecture-Driven Modernization (ADM) family — where KDM models *what a software system is at a coarse architectural level*, ASTM models *what every statement of source code looks like at the abstract-syntax-tree level*. GASTM (Generic ASTM) provides the language-independent core, factoring out the syntactic constructs common to every imperative and object-oriented programming language; SASTM specializations for C, Ada, COBOL, Fortran, and Java refine GASTM for each target language, capturing the syntactic features that are specific to each. ASTM 1.0 (formal/2011-01-05) is the consolidated OMG release that publishes the Core, GASTM, and the five SASTM annexes as a single, cohesive specification.
+The Abstract Syntax Tree Metamodel is the OMG specification that complements KDM by providing fine-grained abstract-syntax representation of source code. ASTM is the AST sibling of KDM in the OMG Architecture-Driven Modernization (ADM) family — where KDM models *what a software system is at a coarse architectural level*, ASTM models *what every statement of source code looks like at the abstract-syntax-tree level*. GASTM (Generic ASTM) is the normative core: a language-independent metamodel that factors out the syntactic constructs common to imperative, object-oriented, declarative, functional, and rule-based languages. Annex A publishes a single **non-normative, illustrative** Specialised ASTM (SASTM) for **Relational-Database manipulation languages (RDB SASTM)** to demonstrate the canonical pattern by which any future SASTM specializes GASTM. ASTM 1.0 (formal/2011-01-05) is the consolidated OMG release; it consists of the GASTM core plus the RDB SASTM annex inside one PDF, with two machine-readable EMOF XMI files (`ASTM-EMOF.xml`, `RDB-EMOF.xml`).
 
-The `@amlhubs/astm` npm package projects the ASTM 1.0 metamodel into TypeScript as extensible interfaces and base classes covering the 7 ASTM packages: the **Core metamodel** supplying the universal AST-node machinery; the **GASTM (Generic) metamodel** representing the language-independent syntactic constructs (declarations, definitions, types, statements, expressions, control-flow, and data-flow elements); and the five **SASTM specializations** for C, Ada, COBOL, Fortran, and Java that refine GASTM with the syntactic features specific to each programming language. Every interface carries a JSDoc header citing the precise ASTM 1.0 §-section that defines it, making each symbol an auditable projection of the specification rather than an internal invention.
+ASTM 1.0 §1.5 explicitly states that procedural / declarative / functional / object-oriented / rule-based language SASTMs (e.g., SASTM-for-C, SASTM-for-Java) "will be added incrementally in the future by the supplementation of the ASTM with SASTMs". As of 2026, OMG has **not** issued any such supplement; the `@amlhubs/astm` package therefore covers only what the formal spec actually publishes: GASTM (normative) + RDB SASTM (illustrative).
+
+The `@amlhubs/astm` npm package projects the ASTM 1.0 metamodel into TypeScript as extensible interfaces and base classes covering **249 metaclasses**: **193 GASTM classes** (the normative language-independent core) plus **56 `RDB*`-prefixed extension classes** that constitute the RDB SASTM annex. The metaclasses partition into 9 nested packages: `ASTMCore` (root: GASTMObject), `ASTMCore.ASTMSemantics` (Scope, Project, semantic objects), `ASTMCore.ASTMSource` (CompilationUnit, SourceFile, SourceLocation), and `ASTMCore.ASTMSyntax` with five sub-packages (`Directives`, `Types`, `DeclarationAndDefinition`, `Expression`, `Statement`). RDB SASTM extends GASTM in place — its 56 new classes (`RDBTableDefinition`, `RDBColumnReference`, `RDBSelectStatement`, …) reuse the same package paths without collision because every RDB-introduced class carries the `RDB` prefix. Every interface carries a JSDoc header citing the precise ASTM 1.0 §-section and the EMOF `xmi:id` that defines it, making each symbol an auditable projection of the specification rather than an internal invention.
 
 ## Business Value — Why Extending This Metamodel Pays Off
 
@@ -29,19 +31,22 @@ The third lever is compounding reuse across the OMG ADM stack. ASTM coordinates 
 
 ## Scope — What the Package Surfaces
 
-ASTM 1.0 partitions the metamodel into 7 packages: the Core, the language-independent GASTM, and the five SASTM language-specific specializations. The complete enumeration lives in `astm.ts`; the table below summarizes each package and cites the authoritative §-section. Metaclass counts will be filled in by the implementer waves.
+ASTM 1.0 publishes **one normative core (GASTM)** and **one non-normative annex SASTM (RDB SASTM)** inside a single PDF. The 249 metaclasses live in 9 nested packages, partitioned as follows:
 
-| ASTM Package | §Section | Metaclasses Surfaced |
-|---|---|---|
-| ASTM Core | §6 | ASTMSyntaxElement, AggregateScope, SyntaxRelation, the universal AST-node spine |
-| GASTM (Generic ASTM) | §7 | Declaration, Definition, Type, Statement, Expression, ControlFlow, DataFlow, NameReference, Annotation |
-| SASTM for C | §8 | C-specific declarations (struct, union, enum), preprocessor directives, pointer types, storage classes |
-| SASTM for Ada | §9 | Ada-specific package and tasking constructs, generic units, protected types, exception handlers |
-| SASTM for COBOL | §10 | COBOL DIVISION/SECTION/PARAGRAPH structure, PIC clauses, REDEFINES, level-numbered records |
-| SASTM for Fortran | §11 | Fortran module and subroutine constructs, array constructors, common blocks, format specifications |
-| SASTM for Java | §12 | Java package and class constructs, annotations, generics, lambda expressions, inner classes |
+| Nested Package | GASTM (normative) | + RDB SASTM | Coverage |
+|---|---:|---:|---|
+| `ASTMCore` | 1 | 0 | `GASTMObject` — the abstract root of every ASTM metaclass. |
+| `ASTMCore.ASTMSemantics` | 8 | 0 | `Scope`, `AggregateScope`, `BlockScope`, `FunctionScope`, `GlobalScope`, `ProgramScope`, `Project`, `GASTMSemanticObject`. |
+| `ASTMCore.ASTMSource` | 5 | 0 | `CompilationUnit`, `SourceFile`, `SourceFileReference`, `SourceLocation`, `GASTMSourceObject`. |
+| `ASTMCore.ASTMSyntax` | 2 | 0 | `GASTMSyntaxObject`, `MinorSyntaxObject`. |
+| `ASTMCore.ASTMSyntax.Directives` | 5 | 0 | `Comment`, `Directive`, `IncludeUnit`, `MacroCall`, `PreprocessorElement`. |
+| `ASTMCore.ASTMSyntax.Types` | 42 | +26 | Primitive types, aggregate types, array, class, enum, member objects, type qualifiers — plus 26 RDB column / cursor / database types. |
+| `ASTMCore.ASTMSyntax.DeclarationAndDefinition` | 37 | +14 | Declarations and definitions of data, functions, types — plus 14 RDB table / column / cursor / view definitions. |
+| `ASTMCore.ASTMSyntax.Expression` | 65 | +6 | Operators (arithmetic, logical, bitwise, relational), literals, references, calls, casts, assignments — plus 6 RDB host-variable / column reference expressions. |
+| `ASTMCore.ASTMSyntax.Statement` | 28 | +10 | `IfStatement`, `LoopStatement`, `ReturnStatement`, exception handling — plus 10 RDB DML statements (SELECT, INSERT, UPDATE, DELETE, cursor statements). |
+| **TOTAL** | **193** | **+56** | **249 metaclasses** |
 
-Every interface is accompanied by an extensible base class with the same name minus the `I` prefix (e.g., `Declaration`, `Statement`, `Expression`). The full list and the JSDoc headers citing each §-section will live at [`astm.ts`](./astm.ts) once the implementer waves complete.
+Every concrete metaclass is surfaced as a co-located **interface + extensible base class** pair (e.g., `IGASTMObject` + `GASTMObject`, `IRDBSelectStatement` + `RDBSelectStatement`). Abstract metaclasses (those carrying `isAbstract="true"` in the EMOF XMI — e.g., `GASTMSemanticObject`, `Declaration`, `Statement`, `Type`, `Expression`) are projected as `abstract class` declarations following the spec's `isAbstract` flag verbatim. The full list and the JSDoc headers citing each §-section and `xmi:id` will live at [`astm.ts`](./astm.ts).
 
 ## Dependency Topology
 
@@ -61,35 +66,41 @@ npm install @amlhubs/astm
 
 ```typescript
 import type {
+  IGASTMObject,
+  ICompilationUnit,
+  IScope,
   IDeclaration,
   IStatement,
   IExpression,
   IType,
-  IControlFlow,
-  INameReference,
+  IRDBSelectStatement,
 } from '@amlhubs/astm';
 
 // Declare an ASTM AST slice as a typed metamodel instance.
-declare const myDeclaration: IDeclaration;
+declare const myProject: IGASTMObject;
+declare const myUnit: ICompilationUnit;
 declare const myStatement: IStatement;
-declare const myExpression: IExpression;
+declare const mySql: IRDBSelectStatement;
 ```
 
-The source artifact is [`astm.ts`](./astm.ts). Every interface JSDoc header declares `@standard OMG ASTM 1.0 -- formal/2011-01-05` and a `@section §x.y` reference.
+The source artifact is [`astm.ts`](./astm.ts). Every interface JSDoc header declares `@standard OMG ASTM 1.0 -- formal/2011-01-05` plus a `@section §x.y` PDF reference AND a `@xmiId ASTMCore.…` reference to the typed EMOF XMI.
 
 ## Provenance & Formal References
 
 - [OMG ASTM 1.0 specification](https://www.omg.org/spec/ASTM/1.0/) — formal/2011-01-05
-- Machine-readable XMI (TBD — populated in Phase 2 of the scaffold pipeline)
+- [Machine-readable EMOF XMI archive](https://www.omg.org/cgi-bin/doc?ptc/09-09-06.zip) — ptc/2009-09-06 (contains `ASTM-EMOF.xml` + `RDB-EMOF.xml`)
+- [XSD schemas archive](https://www.omg.org/cgi-bin/doc?ptc/09-07-08.zip) — ptc/2009-07-08 (9 GASTM + 9 RDB XSDs)
 - [OMG ADM portal](https://www.omg.org/adm/) — Architecture-Driven Modernization initiative
 - [Object Management Group home](https://www.omg.org/)
-- Local mirror: `spec/` (text extracts used for §-section citations)
+- Local mirror: `spec/` (PDF + extracted text + EMOF XMI + XSDs; SHA-256 manifest in `spec/sources.md`)
+
+ASTM 1.0 was **not** transposed into an ISO standard (unlike KDM 1.4 / ISO/IEC 19506:2012). The OMG-published `formal/2011-01-05` is the sole authoritative artifact.
 
 ## Version History
 
 | Version | Date | Change Summary |
 |---|---|---|
-| 0.0.1 | initial publish | Full ASTM 1.0 metamodel — Core, GASTM, SASTM for C, Ada, COBOL, Fortran, Java (7 packages) |
+| 0.0.1 | initial publish | Full ASTM 1.0 metamodel — 193 GASTM classes + 56 RDB SASTM classes = 249 metaclasses across 9 nested packages |
 
 ## License
 
