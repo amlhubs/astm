@@ -5077,7 +5077,17 @@ export interface IIdentifierReference extends INameReference {
 }
 
 export class IdentifierReference extends NameReference implements IIdentifierReference {
-  override readonly metaClass = "IdentifierReference" as const;
+  // NOTE — Implementer #4 originally typed `metaClass` with `as const` assuming
+  // IdentifierReference would be a leaf, but ASTM 1.0's RDB-EMOF (Annex A)
+  // declares it as the parent of RDBColumnReference, RDBTableAlias,
+  // RDBTableReference, and RDBTableSpaceReference (4 concrete subclasses
+  // landed by Implementer #7 / Wave 2.2). Surgical type-widening to `string`
+  // (the same shape every other extension-capable parent uses, e.g.
+  // `DataType`, `Statement`, `Expression`, `Definition`, `Type`) so the
+  // metaClass discriminator can be overridden by subclasses without losing
+  // the field's runtime value. The runtime value `"IdentifierReference"` is
+  // unchanged.
+  override readonly metaClass: string = "IdentifierReference";
 }
 
 // ─── 128. TypeQualifiedIdentifierReference (§8.2.1.4.9) ───
@@ -7981,4 +7991,1412 @@ export class RDBViewType extends DataType implements IRDBViewType {
 // Cumulative: 219/249 (193 GASTM + 26 RDB Types).
 // Next wave: Implementer #7 — remaining 30 RDB SASTM classes (MinorSyntax,
 // DeclarationAndDefinition, Statement, Expression extensions).
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BEGIN Implementer #7 (Wave 2.2). RDB SASTM — DeclarationAndDefinition (14)
+// + Expression (6) + Statement (10) = 30 metaclasses.
+// All classes are non-normative Annex A extensions (§8.3.1, §A.*). The PDF
+// carries no `Definition:` paragraphs for these metaclasses — Annex A is
+// strictly illustrative BNF; EMOF is the source-of-truth.
+// Cumulative target after this wave: 249/249.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── 220. RDBConstraint (§A.2.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBConstraint
+ * @metaclass RDBConstraint (concrete)
+ * @generalization MinorSyntaxObject
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB constraint — a MinorSyntaxObject realising the abstract role of an SQL-table constraint (CHECK, FOREIGN KEY, UNIQUE / PRIMARY KEY). Acts as the common supertype of RDBCheckConstraint, RDBRefIntegrity, and RDBUniqueKey.
+ * @note §A.2.1 BNF: "MinorSyntaxObject => RDBConstraint => RDBCheckConstraint
+ *   / RDBRefIntegrity / RDBUniqueKey".  EMOF declares the class self-closing
+ *   with `superClass="ASTMCore.ASTMSyntax.MinorSyntaxObject"` and no own
+ *   `ownedAttribute`.  EMOF does NOT mark RDBConstraint `isAbstract="true"`,
+ *   so per the metamodel-surface rule we declare it concrete and mirror the
+ *   EMOF binding verbatim, even though semantically it functions as a
+ *   common supertype.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from MinorSyntaxObject)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBConstraint extends IMinorSyntaxObject {
+  // pure marker interface -- RDBConstraint has no additional structure.
+}
+
+export class RDBConstraint extends MinorSyntaxObject implements IRDBConstraint {
+  override readonly metaClass: string = "RDBConstraint";
+}
+
+// ─── 221. RDBCheckConstraint (§A.2.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBCheckConstraint
+ * @metaclass RDBCheckConstraint (concrete)
+ * @generalization RDBConstraint
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB CHECK constraint — an RDBConstraint specialisation that carries a Boolean predicate (`RDBConstraintText`) the DBMS must satisfy for every row of the constrained table, classified by `RDBConstraintType` (e.g., domain check, range check).
+ * @note §A.2.1 BNF: "RDBConstraint => RDBCheckConstraint".  PDF §A.2.2 line
+ *   5736: "RDBCheckConstraint -> < RDBConstraintText : String >
+ *   < RDBConstraintType : Char >".  EMOF declares both attributes as
+ *   `emof:PrimitiveType ... #String` with no explicit `lower=` (defaults
+ *   to 0).  Per BlockStatement-style precedent we honour EMOF cardinality:
+ *   both attributes optional.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • RDBConstraintType : String [0..1] -- §A.2.2: PDF marks `<...>` (optional). EMOF has no `lower=`.
+ *   • RDBConstraintText : String [0..1] -- §A.2.2: PDF marks `<...>` (optional). EMOF has no `lower=`.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBCheckConstraint extends IRDBConstraint {
+  readonly RDBConstraintType?: string;
+  readonly RDBConstraintText?: string;
+}
+
+export class RDBCheckConstraint extends RDBConstraint implements IRDBCheckConstraint {
+  override readonly metaClass: string = "RDBCheckConstraint";
+  readonly RDBConstraintType?: string;
+  readonly RDBConstraintText?: string;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    RDBConstraintType?: string;
+    RDBConstraintText?: string;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.RDBConstraintType = args.RDBConstraintType;
+    this.RDBConstraintText = args.RDBConstraintText;
+  }
+}
+
+// ─── 222. RDBRefIntegrity (§A.2.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBRefIntegrity
+ * @metaclass RDBRefIntegrity (concrete)
+ * @generalization RDBConstraint
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB referential-integrity constraint — an RDBConstraint specialisation realising the SQL FOREIGN KEY mechanism: it binds local foreign-key columns to parent-table key columns so the DBMS enforces row-level reference integrity.
+ * @note §A.2.1 BNF: "RDBConstraint => RDBRefIntegrity".  PDF §A.2.2 lines
+ *   5741-5749: "RDBRefIntegrity -> ForeignKey : RDBColumnReference * /
+ *   ParentKey : RDBColumnReference * / ParentTable : RDBColumnReference".
+ *   EMOF authoritatively declares all three attributes typed
+ *   `RDBColumnReference` (note: `parentTable` is typed `RDBColumnReference`
+ *   in EMOF, NOT `RDBTableReference` — we honour EMOF VERBATIM even though
+ *   PDF prose suggests `RDBTableReference` would be more semantically
+ *   correct).  EMOF cardinalities: foreignKey `upper="*"` (0..*),
+ *   parentKey `upper="*"` (0..*), parentTable `lower="1"` (1..1).
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • foreignKey  : RDBColumnReference [0..*] -- §A.2.2: PDF "ForeignKey : RDBColumnReference *". EMOF upper="*", no lower=.
+ *   • parentKey   : RDBColumnReference [0..*] -- §A.2.2: PDF "ParentKey : RDBColumnReference *". EMOF upper="*", no lower=.
+ *   • parentTable : RDBColumnReference [1..1] -- §A.2.2: PDF "ParentTable : RDBColumnReference". EMOF lower="1". Type kept as RDBColumnReference per EMOF authority (semantically a table handle).
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBRefIntegrity extends IRDBConstraint {
+  readonly foreignKey: ReadonlyArray<IRDBColumnReference>;
+  readonly parentKey: ReadonlyArray<IRDBColumnReference>;
+  readonly parentTable: IRDBColumnReference;
+}
+
+export class RDBRefIntegrity extends RDBConstraint implements IRDBRefIntegrity {
+  override readonly metaClass: string = "RDBRefIntegrity";
+  readonly foreignKey: ReadonlyArray<IRDBColumnReference>;
+  readonly parentKey: ReadonlyArray<IRDBColumnReference>;
+  readonly parentTable: IRDBColumnReference;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    parentTable: IRDBColumnReference;
+    foreignKey?: ReadonlyArray<IRDBColumnReference>;
+    parentKey?: ReadonlyArray<IRDBColumnReference>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.foreignKey = args.foreignKey ?? [];
+    this.parentKey = args.parentKey ?? [];
+    this.parentTable = args.parentTable;
+  }
+}
+
+// ─── 223. RDBUniqueKey (§A.2.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBUniqueKey
+ * @metaclass RDBUniqueKey (concrete)
+ * @generalization RDBConstraint
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB unique-key constraint — an RDBConstraint specialisation realising the SQL UNIQUE / PRIMARY KEY mechanism: it nominates one or more columns of the constrained table whose combined value the DBMS must keep distinct across rows.
+ * @note §A.2.1 BNF: "RDBConstraint => RDBUniqueKey".  PDF §A.2.2 line 5755:
+ *   "RDBUniqueKey -> Column : RDBColumnReference*".  EMOF declares
+ *   `column` with `upper="*"` and no explicit `lower=` (defaults to 0).
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • column : RDBColumnReference [0..*] -- §A.2.2: PDF "Column : RDBColumnReference*". EMOF upper="*", no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBUniqueKey extends IRDBConstraint {
+  readonly column: ReadonlyArray<IRDBColumnReference>;
+}
+
+export class RDBUniqueKey extends RDBConstraint implements IRDBUniqueKey {
+  override readonly metaClass: string = "RDBUniqueKey";
+  readonly column: ReadonlyArray<IRDBColumnReference>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    column?: ReadonlyArray<IRDBColumnReference>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.column = args.column ?? [];
+  }
+}
+
+// ─── 224. RDBIndex (§A.2.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndex
+ * @metaclass RDBIndex (concrete)
+ * @generalization MinorSyntaxObject
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB index — a MinorSyntaxObject realising the SQL INDEX construct (an ordered access path over a tuple of table columns), classified by the `IsUnique` / `NotNull` modifiers and the ordered sequence of `indexColumn` participants.
+ * @note §A.2.1 BNF: "MinorSyntaxObject => RDBIndex".  PDF §A.2.2 lines
+ *   5709-5712: "RDBIndex -> IndexColumn : RDBIndexColumn* / < NotNull :
+ *   Boolean > / < IsUnique : Boolean >".  EMOF declares both Booleans
+ *   without explicit `lower=` (defaults to 0 — PDF uses `<...>` to mark
+ *   optional).  EMOF declares `indexColumn` with `upper="*"`, no `lower=`.
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • NotNull     : Boolean        [0..1] -- §A.2.2: PDF "< NotNull : Boolean >". EMOF emof:PrimitiveType #Boolean, no lower=.
+ *   • IsUnique    : Boolean        [0..1] -- §A.2.2: PDF "< IsUnique : Boolean >". EMOF emof:PrimitiveType #Boolean, no lower=.
+ *   • indexColumn : RDBIndexColumn [0..*] -- §A.2.2: PDF "IndexColumn : RDBIndexColumn*". EMOF upper="*", no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBIndex extends IMinorSyntaxObject {
+  readonly NotNull?: boolean;
+  readonly IsUnique?: boolean;
+  readonly indexColumn: ReadonlyArray<IRDBIndexColumn>;
+}
+
+export class RDBIndex extends MinorSyntaxObject implements IRDBIndex {
+  override readonly metaClass: string = "RDBIndex";
+  readonly NotNull?: boolean;
+  readonly IsUnique?: boolean;
+  readonly indexColumn: ReadonlyArray<IRDBIndexColumn>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    NotNull?: boolean;
+    IsUnique?: boolean;
+    indexColumn?: ReadonlyArray<IRDBIndexColumn>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.NotNull = args.NotNull;
+    this.IsUnique = args.IsUnique;
+    this.indexColumn = args.indexColumn ?? [];
+  }
+}
+
+// ─── 225. RDBIndexColumn (§A.2.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBIndexColumn
+ * @metaclass RDBIndexColumn (concrete)
+ * @generalization MinorSyntaxObject
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB index column — a MinorSyntaxObject realising one ordered participant of an RDBIndex, binding a target `column : RDBColumnReference` to an ascending-or-descending sort direction (`AscendingOrDescending`).
+ * @note §A.2.1 BNF: "MinorSyntaxObject => RDBIndexColumn".  PDF §A.2.2
+ *   lines 5716-5720: "RDBIndexColumn -> Column : RDBColumnReference (M:1)
+ *   / < AscendingOrDescending : Char >".  EMOF declares `column` with
+ *   `lower="1"` and `AscendingOrDescending` typed as `emof:PrimitiveType
+ *   #String` (NOT Char — we honour EMOF VERBATIM; ASTM 1.0 has no
+ *   primitive Char projection and aliases char-like attributes as String)
+ *   with no explicit `lower=`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • AscendingOrDescending : String              [0..1] -- §A.2.2: PDF "< AscendingOrDescending : Char >". EMOF emof:PrimitiveType #String (Char aliased), no lower=.
+ *   • column                : RDBColumnReference  [1..1] -- §A.2.2: PDF "Column : RDBColumnReference (M:1)". EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBIndexColumn extends IMinorSyntaxObject {
+  readonly AscendingOrDescending?: string;
+  readonly column: IRDBColumnReference;
+}
+
+export class RDBIndexColumn extends MinorSyntaxObject implements IRDBIndexColumn {
+  override readonly metaClass: string = "RDBIndexColumn";
+  readonly AscendingOrDescending?: string;
+  readonly column: IRDBColumnReference;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    column: IRDBColumnReference;
+    AscendingOrDescending?: string;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.AscendingOrDescending = args.AscendingOrDescending;
+    this.column = args.column;
+  }
+}
+
+// ─── 226. RDBTrigger (§A.2.1) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.1
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTrigger
+ * @metaclass RDBTrigger (concrete)
+ * @generalization MinorSyntaxObject
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB trigger — a MinorSyntaxObject realising a vendor-specific SQL TRIGGER (a stored procedure bound to an INSERT/UPDATE/DELETE event on its owning table). ASTM 1.0 declares no portable trigger structure — the metaclass is a vendor-extension placeholder.
+ * @note §A.2.1 BNF: "MinorSyntaxObject => RDBTrigger".  PDF §A.2.2 line
+ *   5726: "RDBTrigger -> ; !! Details of trigger are vendorspecific".
+ *   EMOF declares the class self-closing with `superClass=
+ *   "ASTMCore.ASTMSyntax.MinorSyntaxObject"` and no own `ownedAttribute`.
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all details declared vendor-specific by the spec)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBTrigger extends IMinorSyntaxObject {
+  // pure marker interface -- RDBTrigger details are explicitly vendor-specific in the spec.
+}
+
+export class RDBTrigger extends MinorSyntaxObject implements IRDBTrigger {
+  override readonly metaClass: string = "RDBTrigger";
+}
+
+// ─── 227. RDBColumnDefinition (§A.2.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBColumnDefinition
+ * @metaclass RDBColumnDefinition (concrete)
+ * @generalization Definition
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB column definition — a Definition specialisation realising the SQL CREATE-TABLE column clause: it carries the column's `NotNull` modifier; the column's name and column-type are projected through the inherited Definition machinery (`identifierName : Name`, `definitionType : TypeReference`).
+ * @note §A.2.2 BNF: "Definition => RDBColumnDefinition".  PDF lines
+ *   5703-5704: "RDBColumnDefinition -> < NotNull : Boolean >".  EMOF
+ *   declares `NotNull` typed `emof:PrimitiveType #Boolean` with no
+ *   explicit `lower=` (defaults to 0 — PDF marks `<...>` to mean
+ *   optional).  Column name / column-type are inherited from Definition
+ *   (no own `ownedAttribute` for them).  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • NotNull : Boolean [0..1] -- §A.2.2: PDF "< NotNull : Boolean >". EMOF emof:PrimitiveType #Boolean, no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBColumnDefinition extends IDefinition {
+  readonly NotNull?: boolean;
+}
+
+export class RDBColumnDefinition extends Definition implements IRDBColumnDefinition {
+  override readonly metaClass: string = "RDBColumnDefinition";
+  readonly NotNull?: boolean;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    NotNull?: boolean;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.NotNull = args.NotNull;
+  }
+}
+
+// ─── 228. RDBCursorDefinition (§A.2.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBCursorDefinition
+ * @metaclass RDBCursorDefinition (concrete)
+ * @generalization Definition
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB cursor definition — a Definition specialisation realising the SQL DECLARE CURSOR statement: it binds the cursor's name (inherited from Definition's `identifierName`) to the `SelectExpression : RDBSelectExpression` whose row-set it iterates.
+ * @note §A.2.2 BNF: "Definition => RDBCursorDefinition".  PDF line 5707:
+ *   "RDBCursorDefinition -> SelectExpression : RDBSelectExpression".
+ *   EMOF declares `SelectExpression` with `lower="1"` and type
+ *   `ASTMCore.ASTMSyntax.Expression.RDBSelectExpression`.  ASTM 1.0 Annex
+ *   A is non-normative.
+ * @ownedAttributes
+ *   • SelectExpression : RDBSelectExpression [1..1] -- §A.2.2: PDF "SelectExpression : RDBSelectExpression". EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBCursorDefinition extends IDefinition {
+  readonly SelectExpression: IRDBSelectExpression;
+}
+
+export class RDBCursorDefinition extends Definition implements IRDBCursorDefinition {
+  override readonly metaClass: string = "RDBCursorDefinition";
+  readonly SelectExpression: IRDBSelectExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    SelectExpression: IRDBSelectExpression;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.SelectExpression = args.SelectExpression;
+  }
+}
+
+// ─── 229. RDBDatabaseDefinition (§A.2.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBDatabaseDefinition
+ * @metaclass RDBDatabaseDefinition (concrete)
+ * @generalization Definition
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB database definition — a Definition specialisation realising the SQL CREATE DATABASE statement: it binds the database name (inherited via Definition) to its default `tableSpace : RDBTableSpaceReference`.
+ * @note §A.2.2 BNF: "Definition => RDBDatabaseDefinition".  PDF lines
+ *   5692-5693: "RDBDatabaseDefinition -> !! Default TableSpace is always
+ *   present  TableSpace : RDBTableSpaceReference +".  PDF marks the
+ *   attribute with `+` (1..*) but EMOF declares `tableSpace` with NO
+ *   explicit `lower=` and NO explicit `upper=` (defaults: 0..1).  Per
+ *   metamodel-surface rules we honour EMOF VERBATIM and capture the PDF
+ *   disagreement as a `@note`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • tableSpace : RDBTableSpaceReference [0..1] -- §A.2.2: PDF "TableSpace : RDBTableSpaceReference +" (1..*) but EMOF declares no lower= and no upper= (defaults to 0..1). EMOF is source-of-truth.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBDatabaseDefinition extends IDefinition {
+  readonly tableSpace?: IRDBTableSpaceReference;
+}
+
+export class RDBDatabaseDefinition extends Definition implements IRDBDatabaseDefinition {
+  override readonly metaClass: string = "RDBDatabaseDefinition";
+  readonly tableSpace?: IRDBTableSpaceReference;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    tableSpace?: IRDBTableSpaceReference;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.tableSpace = args.tableSpace;
+  }
+}
+
+// ─── 230. RDBTableDefinition (§A.2.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableDefinition
+ * @metaclass RDBTableDefinition (concrete)
+ * @generalization Definition
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB table definition — a Definition specialisation realising the SQL CREATE TABLE statement: it groups the table's `PrimKey : RDBColumnReference [*]` participants, `Column : RDBColumnDefinition [*]` body, `constraint : RDBConstraint [*]` collection, `Index : RDBIndex [*]` collection, and `trigger : RDBTrigger [*]` collection under one Definition.
+ * @note §A.2.2 BNF: "Definition => RDBTableDefinition".  PDF lines
+ *   5697-5701: "RDBTableDefinition -> PrimKey : RDBColumnReference * /
+ *   Column : RDBColumnDefinition * / Constraint : RDBConstraint * /
+ *   Index : RDBIndex * / Trigger : RDBTrigger *".  EMOF declares every
+ *   attribute with `upper="*"` and no `lower=`.  Attribute names follow
+ *   EMOF's mixed-case casing VERBATIM (`PrimKey`, `Column`, `constraint`,
+ *   `Index`, `trigger`) even though stylistically inconsistent — that is
+ *   the OMG xmi:id authority and we mirror it.  ASTM 1.0 Annex A is
+ *   non-normative.
+ * @ownedAttributes
+ *   • PrimKey    : RDBColumnReference   [0..*] -- §A.2.2: PDF "PrimKey : RDBColumnReference *". EMOF upper="*", no lower=.
+ *   • Column     : RDBColumnDefinition  [0..*] -- §A.2.2: PDF "Column : RDBColumnDefinition *". EMOF upper="*", no lower=.
+ *   • constraint : RDBConstraint        [0..*] -- §A.2.2: PDF "Constraint : RDBConstraint *". EMOF attribute name VERBATIM "constraint" (lowercase), upper="*", no lower=.
+ *   • Index      : RDBIndex             [0..*] -- §A.2.2: PDF "Index : RDBIndex *". EMOF upper="*", no lower=.
+ *   • trigger    : RDBTrigger           [0..*] -- §A.2.2: PDF "Trigger : RDBTrigger *". EMOF attribute name VERBATIM "trigger" (lowercase), upper="*", no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBTableDefinition extends IDefinition {
+  readonly PrimKey: ReadonlyArray<IRDBColumnReference>;
+  readonly Column: ReadonlyArray<IRDBColumnDefinition>;
+  readonly constraint: ReadonlyArray<IRDBConstraint>;
+  readonly Index: ReadonlyArray<IRDBIndex>;
+  readonly trigger: ReadonlyArray<IRDBTrigger>;
+}
+
+export class RDBTableDefinition extends Definition implements IRDBTableDefinition {
+  override readonly metaClass: string = "RDBTableDefinition";
+  readonly PrimKey: ReadonlyArray<IRDBColumnReference>;
+  readonly Column: ReadonlyArray<IRDBColumnDefinition>;
+  readonly constraint: ReadonlyArray<IRDBConstraint>;
+  readonly Index: ReadonlyArray<IRDBIndex>;
+  readonly trigger: ReadonlyArray<IRDBTrigger>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    PrimKey?: ReadonlyArray<IRDBColumnReference>;
+    Column?: ReadonlyArray<IRDBColumnDefinition>;
+    constraint?: ReadonlyArray<IRDBConstraint>;
+    Index?: ReadonlyArray<IRDBIndex>;
+    trigger?: ReadonlyArray<IRDBTrigger>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.PrimKey = args.PrimKey ?? [];
+    this.Column = args.Column ?? [];
+    this.constraint = args.constraint ?? [];
+    this.Index = args.Index ?? [];
+    this.trigger = args.trigger ?? [];
+  }
+}
+
+// ─── 231. RDBTableSpaceDefinition (§A.2.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableSpaceDefinition
+ * @metaclass RDBTableSpaceDefinition (concrete)
+ * @generalization Definition
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB table-space definition — a Definition specialisation realising the SQL CREATE TABLESPACE statement: it nominates the named storage area that hosts the `table : RDBTableReference [*]` collection of tables physically placed within it.
+ * @note §A.2.2 BNF: "Definition => RDBTableSpaceDefinition".  PDF line
+ *   5698: "RDBTableSpaceDefinition -> Column : RDBColumnDefinition *" —
+ *   the PDF column-text is mis-aligned across pages and visibly bleeds
+ *   into the next class.  EMOF authoritatively declares `table` typed
+ *   `RDBTableReference` with `upper="*"` and no `lower=` (i.e., a
+ *   table-space owns 0..* tables).  We honour EMOF VERBATIM.  ASTM 1.0
+ *   Annex A is non-normative.
+ * @ownedAttributes
+ *   • table : RDBTableReference [0..*] -- §A.2.2 (EMOF authoritative): table-space contains 0..* tables. EMOF upper="*", no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBTableSpaceDefinition extends IDefinition {
+  readonly table: ReadonlyArray<IRDBTableReference>;
+}
+
+export class RDBTableSpaceDefinition extends Definition implements IRDBTableSpaceDefinition {
+  override readonly metaClass: string = "RDBTableSpaceDefinition";
+  readonly table: ReadonlyArray<IRDBTableReference>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    table?: ReadonlyArray<IRDBTableReference>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.table = args.table ?? [];
+  }
+}
+
+// ─── 232. RDBUserDefinition (§A.2.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBUserDefinition
+ * @metaclass RDBUserDefinition (concrete)
+ * @generalization Definition
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB user definition — a Definition specialisation realising the SQL CREATE USER statement: it binds the principal-identity name (inherited via Definition) to the `owns : RDBTableDefinition [1..*]` collection of tables for which the user is the schema owner.
+ * @note §A.2.2 BNF: "Definition => RDBUserDefinition".  PDF line 5695
+ *   "Owns : RDBTableReference + ;" (PDF says RDBTableReference) is
+ *   contradicted by EMOF which declares `owns` typed
+ *   `ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBTableDefinition`
+ *   with `lower="1" upper="*"`.  Per metamodel-surface rules we honour
+ *   EMOF VERBATIM — the user owns 1..* TABLE DEFINITIONS (the schema
+ *   declarations), not table references.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • owns : RDBTableDefinition [1..*] -- §A.2.2 (EMOF authoritative — overrides PDF which says RDBTableReference): user owns 1..* table definitions. EMOF lower="1" upper="*".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBUserDefinition extends IDefinition {
+  readonly owns: ReadonlyArray<IRDBTableDefinition>;
+}
+
+export class RDBUserDefinition extends Definition implements IRDBUserDefinition {
+  override readonly metaClass: string = "RDBUserDefinition";
+  readonly owns: ReadonlyArray<IRDBTableDefinition>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    owns: ReadonlyArray<IRDBTableDefinition>;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.owns = args.owns;
+  }
+}
+
+// ─── 233. RDBViewDefinition (§A.2.2) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.2
+ * @xmiId ASTMCore.ASTMSyntax.DeclarationAndDefinition.RDBViewDefinition
+ * @metaclass RDBViewDefinition (concrete)
+ * @generalization Definition
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB view definition — a Definition specialisation realising the SQL CREATE VIEW statement: it binds the view's name (inherited via Definition) to the `DefinedBy : RDBSelectExpression` whose result-set realises the view's virtual row population.
+ * @note §A.2.2 BNF: "Definition => RDBViewDefinition".  PDF line 5705:
+ *   "RDBViewDefinition -> DefinedBy : RDBSelectExpression".  EMOF
+ *   declares `DefinedBy` with `lower="1"` and type
+ *   `ASTMCore.ASTMSyntax.Expression.RDBSelectExpression`.  ASTM 1.0 Annex
+ *   A is non-normative.
+ * @ownedAttributes
+ *   • DefinedBy : RDBSelectExpression [1..1] -- §A.2.2: PDF "DefinedBy : RDBSelectExpression". EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBViewDefinition extends IDefinition {
+  readonly DefinedBy: IRDBSelectExpression;
+}
+
+export class RDBViewDefinition extends Definition implements IRDBViewDefinition {
+  override readonly metaClass: string = "RDBViewDefinition";
+  readonly DefinedBy: IRDBSelectExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    accessKind: IAccessKind;
+    storageSpecifier: IStorageSpecification;
+    identifierName: IName;
+    ofDeclaration: IDeclaration;
+    DefinedBy: IRDBSelectExpression;
+    linkageSpecifier?: string;
+    definitionType?: ITypeReference;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      accessKind: args.accessKind,
+      storageSpecifier: args.storageSpecifier,
+      identifierName: args.identifierName,
+      ofDeclaration: args.ofDeclaration,
+      linkageSpecifier: args.linkageSpecifier,
+      definitionType: args.definitionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.DefinedBy = args.DefinedBy;
+  }
+}
+
+// ─── 234. RDBHostVariableReference (§A.2.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.5
+ * @xmiId ASTMCore.ASTMSyntax.Expression.RDBHostVariableReference
+ * @metaclass RDBHostVariableReference (concrete)
+ * @generalization Expression
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB host-variable reference — an Expression specialisation realising the embedded-SQL host-variable construct (`:varname [:indicator]`): the SELECT/INSERT/FETCH/UPDATE statements bind result columns into a host-language variable carried by `baseVariable`, optionally accompanied by a NULL-indicator carried by `indicator`.
+ * @note §A.2.5 BNF: "Expression => RDBHostVariableReference".  PDF line
+ *   5872 partially renders as "RDBHostVariableReference   BaseVariable
+ *   : Expression / Indicator : Expression ?".  EMOF declares
+ *   `baseVariable` with `lower="1"`, `indicator` with no `lower=`
+ *   (defaults to 0..1).  Both are typed `Expression`.  ASTM 1.0 Annex A
+ *   is non-normative.
+ * @ownedAttributes
+ *   • baseVariable : Expression [1..1] -- §A.2.5: PDF "BaseVariable : Expression". EMOF lower="1".
+ *   • indicator    : Expression [0..1] -- §A.2.5: PDF "Indicator : Expression ?". EMOF no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBHostVariableReference extends IExpression {
+  readonly baseVariable: IExpression;
+  readonly indicator?: IExpression;
+}
+
+export class RDBHostVariableReference extends Expression implements IRDBHostVariableReference {
+  override readonly metaClass: string = "RDBHostVariableReference";
+  readonly baseVariable: IExpression;
+  readonly indicator?: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    baseVariable: IExpression;
+    indicator?: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.baseVariable = args.baseVariable;
+    this.indicator = args.indicator;
+  }
+}
+
+// ─── 235. RDBSelectExpression (§A.2.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.5
+ * @xmiId ASTMCore.ASTMSyntax.Expression.RDBSelectExpression
+ * @metaclass RDBSelectExpression (concrete)
+ * @generalization Expression
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB SELECT expression — an Expression specialisation realising the inner row-set-producing part of an SQL SELECT (the FROM / WHERE / projected-columns triple), shared as a subexpression by RDBSelectStatement, RDBCursorDefinition, and RDBViewDefinition.
+ * @note §A.2.5 BNF: "Expression => RDBSelectExpression".  PDF lines
+ *   5862-5878: "RDBSelectExpression -> Table : RDBTableReference + /
+ *   Column : RDBColumnReference * / Where : Expression?".  EMOF declares
+ *   `table` with `lower="1" upper="*"`, `where` with no `lower=`
+ *   (defaults to 0..1), `column` with `upper="*"` and no `lower=`
+ *   (defaults to 0..*).  Vendor-specific clauses (GROUP BY, HAVING,
+ *   ORDER BY, FOR UPDATE OF, CONNECT BY, START WITH) are explicitly
+ *   excluded from the standard metaclass by §A.2.5 PDF prose.  ASTM 1.0
+ *   Annex A is non-normative.
+ * @ownedAttributes
+ *   • table  : RDBTableReference  [1..*] -- §A.2.5: PDF "Table : RDBTableReference +". EMOF lower="1" upper="*".
+ *   • where  : Expression         [0..1] -- §A.2.5: PDF "Where : Expression?". EMOF no lower=.
+ *   • column : RDBColumnReference [0..*] -- §A.2.5: PDF "Column : RDBColumnReference *". EMOF upper="*", no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBSelectExpression extends IExpression {
+  readonly table: ReadonlyArray<IRDBTableReference>;
+  readonly where?: IExpression;
+  readonly column: ReadonlyArray<IRDBColumnReference>;
+}
+
+export class RDBSelectExpression extends Expression implements IRDBSelectExpression {
+  override readonly metaClass: string = "RDBSelectExpression";
+  readonly table: ReadonlyArray<IRDBTableReference>;
+  readonly where?: IExpression;
+  readonly column: ReadonlyArray<IRDBColumnReference>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    table: ReadonlyArray<IRDBTableReference>;
+    where?: IExpression;
+    column?: ReadonlyArray<IRDBColumnReference>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.table = args.table;
+    this.where = args.where;
+    this.column = args.column ?? [];
+  }
+}
+
+// ─── 236. RDBColumnReference (§A.2.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.5
+ * @xmiId ASTMCore.ASTMSyntax.Expression.RDBColumnReference
+ * @metaclass RDBColumnReference (concrete)
+ * @generalization IdentifierReference
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB column reference — an IdentifierReference specialisation realising the SQL qualified-column construct (`Table.Column`): the column's own name is carried by the inherited `identifierName : Name`, and the optional `table` attribute is the qualifying entity (typically an RDBTableReference or RDBTableAlias).
+ * @note §A.2.5 BNF: "IdentifierReference => RDBColumnReference".  PDF
+ *   line 5876: "Table : Expression? !! RDBTableReference or RDBTableAlias".
+ *   EMOF declares `table` typed `Expression` (the upper bound covering
+ *   both RDBTableReference and RDBTableAlias which both ultimately
+ *   extend Expression via IdentifierReference) with no `lower=`
+ *   (defaults to 0..1).  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • table : Expression [0..1] -- §A.2.5: PDF "Table : Expression? !! RDBTableReference or RDBTableAlias". EMOF typed Expression, no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBColumnReference extends IIdentifierReference {
+  readonly table?: IExpression;
+}
+
+export class RDBColumnReference extends IdentifierReference implements IRDBColumnReference {
+  override readonly metaClass: string = "RDBColumnReference";
+  readonly table?: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    identifierName: IName;
+    refersTo: IDefintionObject;
+    table?: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      identifierName: args.identifierName,
+      refersTo: args.refersTo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.table = args.table;
+  }
+}
+
+// ─── 237. RDBTableAlias (§A.2.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.5
+ * @xmiId ASTMCore.ASTMSyntax.Expression.RDBTableAlias
+ * @metaclass RDBTableAlias (concrete)
+ * @generalization IdentifierReference
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB table alias — an IdentifierReference specialisation realising the SQL FROM-clause alias construct (`FROM tablename t`): a leaf metaclass that names a local rename of a referenced table inside a SELECT scope.
+ * @note §A.2.5 BNF: "IdentifierReference => RDBTableAlias".  PDF lines
+ *   5874-5875: "RDBTableAlias -> ;!! Leaf level class to represent
+ *   alias of a !! table".  EMOF declares the class self-closing with
+ *   `superClass="ASTMCore.ASTMSyntax.Expression.IdentifierReference"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from IdentifierReference)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBTableAlias extends IIdentifierReference {
+  // pure marker interface -- RDBTableAlias has no additional structure (leaf-level alias name).
+}
+
+export class RDBTableAlias extends IdentifierReference implements IRDBTableAlias {
+  override readonly metaClass: string = "RDBTableAlias";
+}
+
+// ─── 238. RDBTableReference (§A.2.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.5
+ * @xmiId ASTMCore.ASTMSyntax.Expression.RDBTableReference
+ * @metaclass RDBTableReference (concrete)
+ * @generalization IdentifierReference
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB table reference — an IdentifierReference specialisation realising the SQL FROM-clause table reference: the referenced table's name is carried by the inherited `identifierName : Name`, with an optional local alias projected through the `alias : RDBTableAlias [0..1]` attribute.
+ * @note §A.2.5 BNF: "IdentifierReference => RDBTableReference".  PDF line
+ *   5873: "RDBTableReference -> Alias : RDBTableAlias ?".  EMOF declares
+ *   `alias` typed `RDBTableAlias` with no explicit `lower=` (defaults to
+ *   0..1).  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • alias : RDBTableAlias [0..1] -- §A.2.5: PDF "Alias : RDBTableAlias ?". EMOF no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBTableReference extends IIdentifierReference {
+  readonly alias?: IRDBTableAlias;
+}
+
+export class RDBTableReference extends IdentifierReference implements IRDBTableReference {
+  override readonly metaClass: string = "RDBTableReference";
+  readonly alias?: IRDBTableAlias;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    expressionType: ITypeReference;
+    identifierName: IName;
+    refersTo: IDefintionObject;
+    alias?: IRDBTableAlias;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      expressionType: args.expressionType,
+      identifierName: args.identifierName,
+      refersTo: args.refersTo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.alias = args.alias;
+  }
+}
+
+// ─── 239. RDBTableSpaceReference (§A.2.5) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.5
+ * @xmiId ASTMCore.ASTMSyntax.Expression.RDBTableSpaceReference
+ * @metaclass RDBTableSpaceReference (concrete)
+ * @generalization IdentifierReference
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB table-space reference — an IdentifierReference specialisation that names a referenced table-space (typically the default table-space of an RDBDatabaseDefinition). A leaf metaclass with no own structure; the referenced name is carried by the inherited `identifierName : Name`.
+ * @note §A.2.5 BNF: "IdentifierReference => RDBTableSpaceReference"
+ *   (implicit — PDF §A.2.5 enumerates "IdentifierReference => ..." with
+ *   RDBTableReference, RDBTableAlias, RDBColumnReference and the
+ *   table-space-reference variant).  EMOF declares the class
+ *   self-closing with `superClass="ASTMCore.ASTMSyntax.Expression.IdentifierReference"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from IdentifierReference)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBTableSpaceReference extends IIdentifierReference {
+  // pure marker interface -- RDBTableSpaceReference has no additional structure.
+}
+
+export class RDBTableSpaceReference extends IdentifierReference implements IRDBTableSpaceReference {
+  override readonly metaClass: string = "RDBTableSpaceReference";
+}
+
+// ─── 240. RDBCursorStatement (§A.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.RDBCursorStatement
+ * @metaclass RDBCursorStatement (abstract)
+ * @generalization Statement
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB cursor statement — the abstract Statement specialisation that nominates the `cursor : Expression` handle on which a cursor operation (OPEN / FETCH / CLOSE) acts. Concrete subclasses RDBOpenCursorStatement, RDBFetchCursorStatement, and RDBCloseCursorStatement specialise the operation kind.
+ * @note §A.2.4 BNF: "Statement => RDBCursorStatement => RDBOpenCursorStatement
+ *   / RDBFetchCursorStatement / RDBCloseCursorStatement".  PDF line 5852
+ *   "Cursor : Expression ;".  EMOF declares the class
+ *   `isAbstract="true"` with `cursor` typed `Expression` and `lower="1"`.
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • cursor : Expression [1..1] -- §A.2.4: PDF "Cursor : Expression". EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBCursorStatement extends IStatement {
+  readonly cursor: IExpression;
+}
+
+export abstract class RDBCursorStatement extends Statement implements IRDBCursorStatement {
+  override readonly metaClass: string = "RDBCursorStatement";
+  readonly cursor: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    cursor: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.cursor = args.cursor;
+  }
+}
+
+// ─── 241. RDBModifyStatement (§A.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.RDBModifyStatement
+ * @metaclass RDBModifyStatement (abstract)
+ * @generalization Statement
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB modify statement — the abstract Statement specialisation that nominates a target table-collection (`table : RDBTableReference [1..*]`) and an optional WHERE-clause predicate (`where : Expression`) on which a row-mutating operation (UPDATE or DELETE) acts. Concrete subclasses RDBUpdateStatement and RDBDeleteStatement specialise the mutation kind.
+ * @note §A.2.4 BNF: "Statement => RDBModifyStatement => RDBUpdateStatement
+ *   / RDBDeleteStatement".  PDF lines 5844-5847: "RDBModifyStatement ->
+ *   Table : RDBTableReference + / Where : Expression?".  EMOF declares
+ *   the class `isAbstract="true"`, `table` with `lower="1" upper="*"`,
+ *   and `where` typed `Expression` with no `lower=` (defaults to 0..1).
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • table : RDBTableReference [1..*] -- §A.2.4: PDF "Table : RDBTableReference +". EMOF lower="1" upper="*".
+ *   • where : Expression        [0..1] -- §A.2.4: PDF "Where : Expression?". EMOF no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBModifyStatement extends IStatement {
+  readonly table: ReadonlyArray<IRDBTableReference>;
+  readonly where?: IExpression;
+}
+
+export abstract class RDBModifyStatement extends Statement implements IRDBModifyStatement {
+  override readonly metaClass: string = "RDBModifyStatement";
+  readonly table: ReadonlyArray<IRDBTableReference>;
+  readonly where?: IExpression;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    table: ReadonlyArray<IRDBTableReference>;
+    where?: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.table = args.table;
+    this.where = args.where;
+  }
+}
+
+// ─── 242. RDBConnectStatement (§A.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.RDBConnectStatement
+ * @metaclass RDBConnectStatement (concrete)
+ * @generalization Statement
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB connect statement — a Statement specialisation realising the SQL CONNECT-TO statement: it establishes a database connection on the host program using the connection-string host-variable carried by `connectString : RDBHostVariableReference`.
+ * @note §A.2.4 BNF: "Statement => RDBConnectStatement".  PDF line 5824:
+ *   "RDBConnectStatement -> ConnectString : RDBHostVariableReference".
+ *   EMOF declares `connectString` with `lower="1"` and type
+ *   `ASTMCore.ASTMSyntax.Expression.RDBHostVariableReference`.  ASTM 1.0
+ *   Annex A is non-normative.
+ * @ownedAttributes
+ *   • connectString : RDBHostVariableReference [1..1] -- §A.2.4: PDF "ConnectString : RDBHostVariableReference". EMOF lower="1".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBConnectStatement extends IStatement {
+  readonly connectString: IRDBHostVariableReference;
+}
+
+export class RDBConnectStatement extends Statement implements IRDBConnectStatement {
+  override readonly metaClass: string = "RDBConnectStatement";
+  readonly connectString: IRDBHostVariableReference;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    connectString: IRDBHostVariableReference;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.connectString = args.connectString;
+  }
+}
+
+// ─── 243. RDBInsertStatement (§A.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.RDBInsertStatement
+ * @metaclass RDBInsertStatement (concrete)
+ * @generalization Statement
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB insert statement — a Statement specialisation realising the SQL INSERT INTO statement: it inserts one row's `values : Expression [1..*]` into the target tables `intoTable : RDBTableReference [1..*]`, with an optional explicit column projection `columns : RDBColumnReference [0..*]` that pairs values positionally to columns.
+ * @note §A.2.4 BNF: "Statement => RDBInsertStatement".  PDF lines
+ *   5830-5836: "RDBInsertStatement -> IntoTable : RDBTableReference + /
+ *   Columns : RDBColumnReference * / Values : Expression +".  EMOF
+ *   declares `intoTable` with `lower="1" upper="*"`, `columns` with
+ *   `upper="*"` no `lower=` (defaults 0..*), and `values` with
+ *   `lower="1" upper="*"`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • intoTable : RDBTableReference  [1..*] -- §A.2.4: PDF "IntoTable : RDBTableReference +". EMOF lower="1" upper="*".
+ *   • columns   : RDBColumnReference [0..*] -- §A.2.4: PDF "Columns : RDBColumnReference *". EMOF upper="*", no lower=.
+ *   • values    : Expression         [1..*] -- §A.2.4: PDF "Values : Expression +". EMOF lower="1" upper="*".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBInsertStatement extends IStatement {
+  readonly intoTable: ReadonlyArray<IRDBTableReference>;
+  readonly columns: ReadonlyArray<IRDBColumnReference>;
+  readonly values: ReadonlyArray<IExpression>;
+}
+
+export class RDBInsertStatement extends Statement implements IRDBInsertStatement {
+  override readonly metaClass: string = "RDBInsertStatement";
+  readonly intoTable: ReadonlyArray<IRDBTableReference>;
+  readonly columns: ReadonlyArray<IRDBColumnReference>;
+  readonly values: ReadonlyArray<IExpression>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    intoTable: ReadonlyArray<IRDBTableReference>;
+    values: ReadonlyArray<IExpression>;
+    columns?: ReadonlyArray<IRDBColumnReference>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.intoTable = args.intoTable;
+    this.columns = args.columns ?? [];
+    this.values = args.values;
+  }
+}
+
+// ─── 244. RDBSelectStatement (§A.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.RDBSelectStatement
+ * @metaclass RDBSelectStatement (concrete)
+ * @generalization Statement
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB select statement — a Statement specialisation realising the SQL SELECT … INTO statement: it executes the inner `selectExpression : RDBSelectExpression` and binds the projected columns of the result row into the host-language target variables `intoVariable : RDBHostVariableReference [1..*]`.
+ * @note §A.2.4 BNF: "Statement => RDBSelectStatement".  PDF lines
+ *   5826-5828: "RDBSelectStatement -> SelectExpression : RDBSelectExpression
+ *   / IntoVariable : RDBHostVariableReference+".  EMOF declares
+ *   `selectExpression` with `lower="1"` and `intoVariable` with
+ *   `lower="1" upper="*"`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • selectExpression : RDBSelectExpression       [1..1] -- §A.2.4: PDF "SelectExpression : RDBSelectExpression". EMOF lower="1".
+ *   • intoVariable     : RDBHostVariableReference [1..*] -- §A.2.4: PDF "IntoVariable : RDBHostVariableReference+". EMOF lower="1" upper="*".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBSelectStatement extends IStatement {
+  readonly selectExpression: IRDBSelectExpression;
+  readonly intoVariable: ReadonlyArray<IRDBHostVariableReference>;
+}
+
+export class RDBSelectStatement extends Statement implements IRDBSelectStatement {
+  override readonly metaClass: string = "RDBSelectStatement";
+  readonly selectExpression: IRDBSelectExpression;
+  readonly intoVariable: ReadonlyArray<IRDBHostVariableReference>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    selectExpression: IRDBSelectExpression;
+    intoVariable: ReadonlyArray<IRDBHostVariableReference>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.selectExpression = args.selectExpression;
+    this.intoVariable = args.intoVariable;
+  }
+}
+
+// ─── 245. RDBCloseCursorStatement (§A.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.RDBCloseCursorStatement
+ * @metaclass RDBCloseCursorStatement (concrete)
+ * @generalization RDBCursorStatement
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB close-cursor statement — an RDBCursorStatement specialisation realising the SQL CLOSE-CURSOR statement: it releases the cursor named by the inherited `cursor : Expression`, terminating its row-streaming session.
+ * @note §A.2.4 BNF: "RDBCursorStatement => RDBCloseCursorStatement".
+ *   EMOF declares the class self-closing with
+ *   `superClass="ASTMCore.ASTMSyntax.Statement.RDBCursorStatement"` and
+ *   no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBCursorStatement)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBCloseCursorStatement extends IRDBCursorStatement {
+  // pure marker interface -- RDBCloseCursorStatement has no additional structure.
+}
+
+export class RDBCloseCursorStatement extends RDBCursorStatement implements IRDBCloseCursorStatement {
+  override readonly metaClass: string = "RDBCloseCursorStatement";
+}
+
+// ─── 246. RDBFetchCursorStatement (§A.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.RDBFetchCursorStatement
+ * @metaclass RDBFetchCursorStatement (concrete)
+ * @generalization RDBCursorStatement
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB fetch-cursor statement — an RDBCursorStatement specialisation realising the SQL FETCH-FROM-CURSOR statement: it advances the cursor named by the inherited `cursor : Expression` to the next row and binds the projected columns into the host-language target variables `into : RDBHostVariableReference [1..*]`.
+ * @note §A.2.4 BNF: "RDBCursorStatement => RDBFetchCursorStatement".  PDF
+ *   line 5854: "Into : HostVariableReference +".  EMOF declares `into`
+ *   typed `RDBHostVariableReference` (the RDB specialisation, NOT the
+ *   GASTM HostVariableReference) with `lower="1" upper="*"`.  ASTM 1.0
+ *   Annex A is non-normative.
+ * @ownedAttributes
+ *   • into : RDBHostVariableReference [1..*] -- §A.2.4: PDF "Into : HostVariableReference +". EMOF typed RDBHostVariableReference, lower="1" upper="*".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBFetchCursorStatement extends IRDBCursorStatement {
+  readonly into: ReadonlyArray<IRDBHostVariableReference>;
+}
+
+export class RDBFetchCursorStatement extends RDBCursorStatement implements IRDBFetchCursorStatement {
+  override readonly metaClass: string = "RDBFetchCursorStatement";
+  readonly into: ReadonlyArray<IRDBHostVariableReference>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    cursor: IExpression;
+    into: ReadonlyArray<IRDBHostVariableReference>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      cursor: args.cursor,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.into = args.into;
+  }
+}
+
+// ─── 247. RDBOpenCursorStatement (§A.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.RDBOpenCursorStatement
+ * @metaclass RDBOpenCursorStatement (concrete)
+ * @generalization RDBCursorStatement
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB open-cursor statement — an RDBCursorStatement specialisation realising the SQL OPEN-CURSOR statement: it activates the cursor named by the inherited `cursor : Expression`, binding the optional host-variable input parameters `values : Expression [0..*]` into the cursor's defining SELECT before its first row is fetched.
+ * @note §A.2.4 BNF: "RDBCursorStatement => RDBOpenCursorStatement".  PDF
+ *   line 5853: "Values : Expression *".  EMOF declares `values` typed
+ *   `Expression` with `upper="*"` and no `lower=` (defaults to 0..*).
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes
+ *   • values : Expression [0..*] -- §A.2.4: PDF "Values : Expression *". EMOF upper="*", no lower=.
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBOpenCursorStatement extends IRDBCursorStatement {
+  readonly values: ReadonlyArray<IExpression>;
+}
+
+export class RDBOpenCursorStatement extends RDBCursorStatement implements IRDBOpenCursorStatement {
+  override readonly metaClass: string = "RDBOpenCursorStatement";
+  readonly values: ReadonlyArray<IExpression>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    cursor: IExpression;
+    values?: ReadonlyArray<IExpression>;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      cursor: args.cursor,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.values = args.values ?? [];
+  }
+}
+
+// ─── 248. RDBDeleteStatement (§A.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.RDBDeleteStatement
+ * @metaclass RDBDeleteStatement (concrete)
+ * @generalization RDBModifyStatement
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB delete statement — an RDBModifyStatement specialisation realising the SQL DELETE-FROM statement: it removes from each table named by the inherited `table : RDBTableReference [1..*]` the rows satisfying the inherited `where : Expression?` predicate.
+ * @note §A.2.4 BNF: "RDBModifyStatement => RDBDeleteStatement".  EMOF
+ *   declares the class self-closing with
+ *   `superClass="ASTMCore.ASTMSyntax.Statement.RDBModifyStatement"` and
+ *   no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBModifyStatement)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBDeleteStatement extends IRDBModifyStatement {
+  // pure marker interface -- RDBDeleteStatement has no additional structure.
+}
+
+export class RDBDeleteStatement extends RDBModifyStatement implements IRDBDeleteStatement {
+  override readonly metaClass: string = "RDBDeleteStatement";
+}
+
+// ─── 249. RDBUpdateStatement (§A.2.4) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.2.4
+ * @xmiId ASTMCore.ASTMSyntax.Statement.RDBUpdateStatement
+ * @metaclass RDBUpdateStatement (concrete)
+ * @generalization RDBModifyStatement
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB update statement — an RDBModifyStatement specialisation realising the SQL UPDATE … SET statement: it updates the rows in each table named by the inherited `table : RDBTableReference [1..*]` satisfying the inherited `where : Expression?` predicate, replacing column values per the `values : Expression [1..*]` assignment list.
+ * @note §A.2.4 BNF: "RDBModifyStatement => RDBUpdateStatement".  PDF line
+ *   5847: "Values : Expression +".  EMOF declares `values` typed
+ *   `Expression` with `lower="1" upper="*"`.  ASTM 1.0 Annex A is
+ *   non-normative.
+ * @ownedAttributes
+ *   • values : Expression [1..*] -- §A.2.4: PDF "Values : Expression +". EMOF lower="1" upper="*".
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBUpdateStatement extends IRDBModifyStatement {
+  readonly values: ReadonlyArray<IExpression>;
+}
+
+export class RDBUpdateStatement extends RDBModifyStatement implements IRDBUpdateStatement {
+  override readonly metaClass: string = "RDBUpdateStatement";
+  readonly values: ReadonlyArray<IExpression>;
+  constructor(args: {
+    locationInfo: ISourceLocation;
+    table: ReadonlyArray<IRDBTableReference>;
+    values: ReadonlyArray<IExpression>;
+    where?: IExpression;
+    annotations?: ReadonlyArray<IAnnotationExpression>;
+    preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
+  }) {
+    super({
+      locationInfo: args.locationInfo,
+      table: args.table,
+      where: args.where,
+      annotations: args.annotations,
+      preProcessorElements: args.preProcessorElements,
+    });
+    this.values = args.values;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END Implementer #7 (Wave 2.2). RDB DeclAndDef + Expression + Statement
+// COMPLETE: 30/30 metaclasses (14 DeclAndDef + 6 Expression + 10 Statement;
+// 2 abstract + 28 concrete).
+//
+// FINAL CUMULATIVE: 249/249 metaclasses (193 GASTM + 56 RDB) — ASTM 1.0
+// metamodel-surface implementation COMPLETE.  Source-of-truth: EMOF
+// (RDB-EMOF.xml + ASTMCore-EmofXMI.xsd).  Non-normative Annex A
+// citations follow OMG ASTM 1.0 (formal/2011-01-05) §A.* numbering.
 // ═══════════════════════════════════════════════════════════════════════════
