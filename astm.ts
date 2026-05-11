@@ -232,10 +232,10 @@ export abstract class MinorSyntaxObject extends GASTMSyntaxObject implements IMi
  * @generalization GASTMSourceObject
  * @definition Start/end line/column position information, part of a source location specification.
  * @ownedAttributes
- *   • startLine     : Integer        [0..1] -- §7.9 / §8.2.1.1.1: unary Integer valued property.
- *   • startPosition : Integer        [0..1] -- §7.9 / §8.2.1.1.1: unary Integer valued property.
- *   • endLine       : Integer        [0..1] -- §7.9 / §8.2.1.1.1: unary Integer valued property.
- *   • endPosition   : Integer        [0..1] -- §7.9 / §8.2.1.1.1: unary Integer valued property.
+ *   • startLine     : Integer        [1..1] -- §7.9 / §8.2.1.1.1: unary Integer valued property.
+ *   • startPosition : Integer        [1..1] -- §7.9 / §8.2.1.1.1: unary Integer valued property.
+ *   • endLine       : Integer        [1..1] -- §7.9 / §8.2.1.1.1: unary Integer valued property.
+ *   • endPosition   : Integer        [1..1] -- §7.9 / §8.2.1.1.1: unary Integer valued property.
  *   • inSourceFile  : SourceFile     [1..1] -- §7.9 / §8.2.1.1.1: unary association inSourceFile to SourceFile.
  * @associationEnds
  *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
@@ -243,26 +243,26 @@ export abstract class MinorSyntaxObject extends GASTMSyntaxObject implements IMi
  * @constraints (none declared)
  */
 export interface ISourceLocation extends IGASTMSourceObject {
-  readonly startLine?: number;
-  readonly startPosition?: number;
-  readonly endLine?: number;
-  readonly endPosition?: number;
+  readonly startLine: number;
+  readonly startPosition: number;
+  readonly endLine: number;
+  readonly endPosition: number;
   readonly inSourceFile: ISourceFile;
 }
 
 export class SourceLocation extends GASTMSourceObject implements ISourceLocation {
   override readonly metaClass = "SourceLocation" as const;
-  readonly startLine?: number;
-  readonly startPosition?: number;
-  readonly endLine?: number;
-  readonly endPosition?: number;
+  readonly startLine: number;
+  readonly startPosition: number;
+  readonly endLine: number;
+  readonly endPosition: number;
   readonly inSourceFile: ISourceFile;
   constructor(args: {
     inSourceFile: ISourceFile;
-    startLine?: number;
-    startPosition?: number;
-    endLine?: number;
-    endPosition?: number;
+    startLine: number;
+    startPosition: number;
+    endLine: number;
+    endPosition: number;
   }) {
     super();
     this.inSourceFile = args.inSourceFile;
@@ -282,20 +282,20 @@ export class SourceLocation extends GASTMSourceObject implements ISourceLocation
  * @generalization GASTMSourceObject
  * @definition The source file part of a source location specification.
  * @ownedAttributes
- *   • path : String [0..1] -- §7.9 / §8.2.1.1.2: unary property path to String.
+ *   • path : String [1..1] -- §7.9 / §8.2.1.1.2: unary property path to String.
  * @associationEnds
  *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
  * @operations (none)
  * @constraints (none declared)
  */
 export interface ISourceFile extends IGASTMSourceObject {
-  readonly path?: string;
+  readonly path: string;
 }
 
 export class SourceFile extends GASTMSourceObject implements ISourceFile {
   override readonly metaClass: string = "SourceFile";
-  readonly path?: string;
-  constructor(args: { path?: string } = {}) {
+  readonly path: string;
+  constructor(args: { path: string }) {
     super();
     this.path = args.path;
   }
@@ -335,7 +335,7 @@ export class SourceFileReference extends SourceFile implements ISourceFileRefere
   constructor(args: {
     locationInfo: ISourceLocation;
     ofSourceFile: ISourceFile;
-    path?: string;
+    path: string;
   }) {
     super({ path: args.path });
     this.locationInfo = args.locationInfo;
@@ -346,20 +346,18 @@ export class SourceFileReference extends SourceFile implements ISourceFileRefere
 // ─── 9. CompilationUnit (§7.9, §8.2.1.1, §8.1.6) ───
 /**
  * @standard OMG ASTM 1.0 -- formal/2011-01-05
- * @section §7.9, §8.1.6
+ * @section §7.9, §8.2.1.5.2
  * @xmiId ASTMCore.ASTMSource.CompilationUnit
  * @metaclass CompilationUnit (concrete)
  * @generalization SourceFile
- * @definition (spec is silent on an explicit `Definition:` paragraph for
- *   CompilationUnit at §8; §8.1.6 narrative: "Project is a container for a
- *   collection of Compilation Units that contain the source code that is
- *   modeled. Scope and its subclasses are containers for Definitions that are
- *   defined in CompilationUnits." Table 7.6 / §7.7 row 2 implicitly:
- *   "compilation units to be modeled/analyzed as a whole.")
+ * @definition Unit of compilation; typically corresponding to a source file.
+ * @note §7.9 (page 47) lists CompilationUnit among the SourceObject specializations
+ *   without a dedicated Definition: paragraph; the canonical Definition is at
+ *   §8.2.1.5.2 (PDF line 5123).
  * @note CompilationUnit extends SourceFile so it inherits the optional `path`
  *   property declared on SourceFile (§7.9 BNF: `SourceFile -> < path : String >`).
  * @ownedAttributes
- *   • language    : String           [0..1] -- §7.9: unary property language to String.
+ *   • language    : String           [1..1] -- §7.9: unary property language to String.
  *   • fragments   : DefintionObject  [0..*] -- §7.9: zero to any number of DefintionObject fragments. EMOF xmi:id preserves OMG typo "Defintion".
  *   • opensScope  : ProgramScope     [0..1] -- §7.9: optional unary association opensScope to ProgramScope.
  * @associationEnds
@@ -368,22 +366,22 @@ export class SourceFileReference extends SourceFile implements ISourceFileRefere
  * @constraints (none declared)
  */
 export interface ICompilationUnit extends ISourceFile {
-  readonly language?: string;
+  readonly language: string;
   readonly fragments: ReadonlyArray<IDefintionObject>;
   readonly opensScope?: IProgramScope;
 }
 
 export class CompilationUnit extends SourceFile implements ICompilationUnit {
   override readonly metaClass = "CompilationUnit" as const;
-  readonly language?: string;
+  readonly language: string;
   readonly fragments: ReadonlyArray<IDefintionObject>;
   readonly opensScope?: IProgramScope;
   constructor(args: {
-    path?: string;
-    language?: string;
+    path: string;
+    language: string;
     fragments?: ReadonlyArray<IDefintionObject>;
     opensScope?: IProgramScope;
-  } = {}) {
+  }) {
     super({ path: args.path });
     this.language = args.language;
     this.fragments = args.fragments ?? [];
@@ -661,26 +659,26 @@ export abstract class PreprocessorElement extends GASTMSyntaxObject implements I
  *   intermediate "Directive" placeholder; honouring the EMOF source-of-truth,
  *   this slot in Wave 1.1 is occupied by the real MacroDefinition class.
  * @ownedAttributes
- *   • macroName : String [0..1] -- §7.11.3 / §8.2.1.3.1.3: unary property to String.
- *   • body      : String [0..1] -- §7.11.3 / §8.2.1.3.1.3: unary property to String.
+ *   • macroName : String [1..1] -- §7.11.3 / §8.2.1.3.1.3: unary property to String.
+ *   • body      : String [1..1] -- §7.11.3 / §8.2.1.3.1.3: unary property to String.
  * @associationEnds
  *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
  * @operations (none)
  * @constraints (none declared)
  */
 export interface IMacroDefinition extends IPreprocessorElement {
-  readonly macroName?: string;
-  readonly body?: string;
+  readonly macroName: string;
+  readonly body: string;
 }
 
 export class MacroDefinition extends PreprocessorElement implements IMacroDefinition {
   override readonly metaClass = "MacroDefinition" as const;
-  readonly macroName?: string;
-  readonly body?: string;
+  readonly macroName: string;
+  readonly body: string;
   constructor(args: {
     locationInfo: ISourceLocation;
-    macroName?: string;
-    body?: string;
+    macroName: string;
+    body: string;
     annotations?: ReadonlyArray<IAnnotationExpression>;
     preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
   }) {
@@ -705,22 +703,22 @@ export class MacroDefinition extends PreprocessorElement implements IMacroDefini
  * @note §8.2.1.3.1.4 prose: "Comment is a subclass of PreprocessorElement and
  *   has unary property body to String."
  * @ownedAttributes
- *   • body : String [0..1] -- §7.11.3 / §8.2.1.3.1.4: unary property to String.
+ *   • body : String [1..1] -- §7.11.3 / §8.2.1.3.1.4: unary property to String.
  * @associationEnds
  *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
  * @operations (none)
  * @constraints (none declared)
  */
 export interface IComment extends IPreprocessorElement {
-  readonly body?: string;
+  readonly body: string;
 }
 
 export class Comment extends PreprocessorElement implements IComment {
   override readonly metaClass = "Comment" as const;
-  readonly body?: string;
+  readonly body: string;
   constructor(args: {
     locationInfo: ISourceLocation;
-    body?: string;
+    body: string;
     annotations?: ReadonlyArray<IAnnotationExpression>;
     preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
   }) {
@@ -2627,7 +2625,7 @@ export abstract class Definition extends DeclarationOrDefinition implements IDef
  *   DataDefinition has unary property isMutable to primitive Boolean, and
  *   unary association initialValue to Expression."
  * @ownedAttributes
- *   • isMutable    : Boolean    [0..1] -- §8.2.1.3.3.2.3: unary property isMutable to primitive Boolean. EMOF has no `lower=`.
+ *   • isMutable    : Boolean    [1..1] -- §8.2.1.3.3.2.3: unary property isMutable to primitive Boolean. EMOF has no `lower=`.
  *   • initialValue : Expression [0..1] -- §8.2.1.3.3.2.3: unary association initialValue to Expression. EMOF has no `lower=` (PDF marks Expression?).
  * @associationEnds
  *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
@@ -2635,13 +2633,13 @@ export abstract class Definition extends DeclarationOrDefinition implements IDef
  * @constraints (none declared)
  */
 export interface IDataDefinition extends IDefinition {
-  readonly isMutable?: boolean;
+  readonly isMutable: boolean;
   readonly initialValue?: IExpression;
 }
 
 export abstract class DataDefinition extends Definition implements IDataDefinition {
   override readonly metaClass: string = "DataDefinition";
-  readonly isMutable?: boolean;
+  readonly isMutable: boolean;
   readonly initialValue?: IExpression;
   constructor(args: {
     locationInfo: ISourceLocation;
@@ -2651,7 +2649,7 @@ export abstract class DataDefinition extends Definition implements IDataDefiniti
     ofDeclaration: IDeclaration;
     linkageSpecifier?: string;
     definitionType?: ITypeReference;
-    isMutable?: boolean;
+    isMutable: boolean;
     initialValue?: IExpression;
     annotations?: ReadonlyArray<IAnnotationExpression>;
     preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
@@ -2853,7 +2851,7 @@ export class AccessKind extends MinorSyntaxObject implements IAccessKind {
  *   `ofTypeReference : Name [1..1]` (not enumerated in the PDF Property
  *   Specification block but present in EMOF).
  * @ownedAttributes
- *   • nameString      : String [0..1] -- §8.2.1.5.3: unary property nameString to primitive String. EMOF has no `lower=`.
+ *   • nameString      : String [1..1] -- §8.2.1.5.3: unary property nameString to primitive String. EMOF has no `lower=`.
  *   • ofTypeReference : Name   [1..1] -- §8.2.1.5.3 (EMOF only): unary association ofTypeReference to Name. EMOF lower="1".
  * @associationEnds
  *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
@@ -2861,18 +2859,18 @@ export class AccessKind extends MinorSyntaxObject implements IAccessKind {
  * @constraints (none declared)
  */
 export interface IName extends IMinorSyntaxObject {
-  readonly nameString?: string;
+  readonly nameString: string;
   readonly ofTypeReference: IName;
 }
 
 export class Name extends MinorSyntaxObject implements IName {
   override readonly metaClass: string = "Name";
-  readonly nameString?: string;
+  readonly nameString: string;
   readonly ofTypeReference: IName;
   constructor(args: {
     locationInfo: ISourceLocation;
     ofTypeReference: IName;
-    nameString?: string;
+    nameString: string;
     annotations?: ReadonlyArray<IAnnotationExpression>;
     preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
   }) {
@@ -2902,34 +2900,34 @@ export class Name extends MinorSyntaxObject implements IName {
  *   whether the member is virtual." EMOF spelling is `isInline` (lowercase
  *   'l'), not `isInLine`. We honour EMOF.
  * @ownedAttributes
- *   • isFriend         : Boolean              [0..1] -- §8.2.1.5.9.6: unary Boolean property isFriend. EMOF has no `lower=`.
- *   • isInline         : Boolean              [0..1] -- §8.2.1.5.9.6: unary Boolean property isInline. EMOF spelling (PDF: isInLine).
- *   • isThisConst      : Boolean              [0..1] -- §8.2.1.5.9.6: unary Boolean property isThisConst.
- *   • virtualSpecifier : VirtualSpecification [0..1] -- §8.2.1.5.9.6: unary association virtualSpecifier to VirtualSpecification.
+ *   • isFriend         : Boolean              [1..1] -- §8.2.1.5.9.6: unary Boolean property isFriend. EMOF has no `lower=`.
+ *   • isInline         : Boolean              [1..1] -- §8.2.1.5.9.6: unary Boolean property isInline. EMOF spelling (PDF: isInLine).
+ *   • isThisConst      : Boolean              [1..1] -- §8.2.1.5.9.6: unary Boolean property isThisConst.
+ *   • virtualSpecifier : VirtualSpecification [1..1] -- §8.2.1.5.9.6: unary association virtualSpecifier to VirtualSpecification.
  * @associationEnds
  *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
  * @operations (none)
  * @constraints (none declared)
  */
 export interface IFunctionMemberAttributes extends IMinorSyntaxObject {
-  readonly isFriend?: boolean;
-  readonly isInline?: boolean;
-  readonly isThisConst?: boolean;
-  readonly virtualSpecifier?: IVirtualSpecification;
+  readonly isFriend: boolean;
+  readonly isInline: boolean;
+  readonly isThisConst: boolean;
+  readonly virtualSpecifier: IVirtualSpecification;
 }
 
 export class FunctionMemberAttributes extends MinorSyntaxObject implements IFunctionMemberAttributes {
   override readonly metaClass: string = "FunctionMemberAttributes";
-  readonly isFriend?: boolean;
-  readonly isInline?: boolean;
-  readonly isThisConst?: boolean;
-  readonly virtualSpecifier?: IVirtualSpecification;
+  readonly isFriend: boolean;
+  readonly isInline: boolean;
+  readonly isThisConst: boolean;
+  readonly virtualSpecifier: IVirtualSpecification;
   constructor(args: {
     locationInfo: ISourceLocation;
-    isFriend?: boolean;
-    isInline?: boolean;
-    isThisConst?: boolean;
-    virtualSpecifier?: IVirtualSpecification;
+    isFriend: boolean;
+    isInline: boolean;
+    isThisConst: boolean;
+    virtualSpecifier: IVirtualSpecification;
     annotations?: ReadonlyArray<IAnnotationExpression>;
     preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
   }) {
@@ -3347,19 +3345,19 @@ export class NamedTypeDefinition extends TypeDefinition implements INamedTypeDef
  * @note §8.2.1.3.3.1.2 prose: "VariableDeclaration is a subclass of Declaration
  *   and has unary property isMutable to Boolean."
  * @ownedAttributes
- *   • isMutable : Boolean [0..1] -- §8.2.1.3.3.1.2: unary property isMutable to primitive Boolean. EMOF has no `lower=`.
+ *   • isMutable : Boolean [1..1] -- §8.2.1.3.3.1.2: unary property isMutable to primitive Boolean. EMOF has no `lower=`.
  * @associationEnds
  *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
  * @operations (none)
  * @constraints (none declared)
  */
 export interface IVariableDeclaration extends IDeclaration {
-  readonly isMutable?: boolean;
+  readonly isMutable: boolean;
 }
 
 export class VariableDeclaration extends Declaration implements IVariableDeclaration {
   override readonly metaClass = "VariableDeclaration" as const;
-  readonly isMutable?: boolean;
+  readonly isMutable: boolean;
   constructor(args: {
     locationInfo: ISourceLocation;
     accessKind: IAccessKind;
@@ -3368,7 +3366,7 @@ export class VariableDeclaration extends Declaration implements IVariableDeclara
     defRef: IDefinition;
     linkageSpecifier?: string;
     identifierName?: IName;
-    isMutable?: boolean;
+    isMutable: boolean;
     annotations?: ReadonlyArray<IAnnotationExpression>;
     preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
   }) {
@@ -3690,7 +3688,7 @@ export class BitFieldDefinition extends DataDefinition implements IBitFieldDefin
     bitFieldSize: IExpression;
     linkageSpecifier?: string;
     definitionType?: ITypeReference;
-    isMutable?: boolean;
+    isMutable: boolean;
     initialValue?: IExpression;
     annotations?: ReadonlyArray<IAnnotationExpression>;
     preProcessorElements?: ReadonlyArray<IPreprocessorElement>;
