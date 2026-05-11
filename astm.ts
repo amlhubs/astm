@@ -7228,3 +7228,757 @@ export class VariableCatchBlock extends CatchBlock implements IVariableCatchBloc
 // END Implementer #5 (Wave 1.5). GASTM COMPLETE: 193/193 metaclasses.
 // Next wave: RDB SASTM (Wave 2) starts at class 194.
 // ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BEGIN Implementer #6 (Wave 2.1): RDB SASTM — Types — 26 metaclasses
+//
+// Scope: ASTMCore.ASTMSyntax.Types — RDB-prefixed extension classes mirroring
+// the RDB-EMOF.xml `Types` nested-package additions:
+//   • 1 abstract root:    RDBColumnType (extends DataType)         — 1 class
+//   • 19 concrete leaves: RDBBlob, RDBBoolean, RDBChar, RDBClob,
+//                         RDBDate, RDBDecimal, RDBFile, RDBFloat,
+//                         RDBInt, RDBInteger, RDBLong, RDBNClob,
+//                         RDBNumber, RDBRaw, RDBReal, RDBRowid,
+//                         RDBString, RDBTimeStamp, RDBVarChar
+//                         (all extends RDBColumnType)              — 19 classes
+//   • 6 concrete leaves:  RDBCursorType, RDBDataBaseType,
+//                         RDBTableSpaceType, RDBTableType,
+//                         RDBUserType, RDBViewType
+//                         (all extends DataType)                   — 6 classes
+//                                                                    ────────
+//                                                                    26 classes
+//
+// Cumulative metaclass total after this wave: 219 (193 GASTM + 26 RDB Types).
+//
+// Notes on OMG spec idiosyncrasies observed during this wave:
+//   1. The RDB SASTM Annex A (§8.3.1, A.*) is explicitly non-normative —
+//      the PDF §455 prose states "Annex A contains an example of a SASTM
+//      for modeling Relational Data Base (RDB) manipulation languages",
+//      illustrating the GASTM → SASTM specialisation pattern rather than
+//      mandating it.  None of the 26 RDB Types classes carry a `Definition:`
+//      paragraph in the PDF — A.1.3 (RDBMS Types Class Diagrams) and
+//      A.2.3 (Extensions to Data Types) consist solely of a class-diagram
+//      heading and an Extended-BNF production listing the class names.
+//      Per the brief, each `@definition` is therefore annotated
+//      "(non-normative Annex A; spec carries no explicit Definition:
+//      paragraph)" with a one-line structural-intent description inferred
+//      from the EMOF parent (DataType / RDBColumnType) and the SQL
+//      data-type the class name evokes (BLOB, CLOB, DATE, …).
+//   2. The PDF §A.2.3 BNF uses the spellings `RDBVarchar` (lowercase 'c'),
+//      `RDBTime stamp` (with a space), and `RDBBFile` (capital B-F-i-l-e).
+//      The EMOF (RDB-EMOF.xml — xmi:id source of truth) declares
+//      `RDBVarChar`, `RDBTimeStamp` (single token), and `RDBFile` (no
+//      leading 'B') respectively.  We honour the EMOF spellings VERBATIM
+//      in class names, interface names, `metaClass` discriminators, and
+//      `@xmiId` JSDoc lines.  The PDF BNF divergence is noted in each
+//      affected class's `@note` block so consumers can reconcile against
+//      either artifact.
+//   3. The class spelling `RDBDataBaseType` (capital 'B' in "Base") is
+//      preserved exactly as the EMOF declares it — `Database` would be
+//      the conventional English spelling but the OMG xmi:id is the
+//      single source of truth.
+//   4. Every RDB Types class is declared in EMOF as `<ownedType …/>` (self-
+//      closing) — none owns its own `ownedAttribute`.  All structural
+//      members (the `isConst` Boolean from Type, the `locationInfo`,
+//      `annotations`, and `preProcessorElements` from GASTMSyntaxObject)
+//      are inherited.  Each interface is therefore a pure marker
+//      `extends IDataType {}` or `extends IRDBColumnType {}`, and each
+//      concrete class body holds only its `metaClass` discriminator.
+//   5. No forward-reference shadow aliases are required — every parent
+//      (DataType at #23, and RDBColumnType authored at #194 in this wave)
+//      is in scope by the time its descendants are declared.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ─── 194. RDBColumnType (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBColumnType
+ * @metaclass RDBColumnType (abstract)
+ * @generalization DataType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) Abstract root of the RDB column-type hierarchy — the umbrella DataType specialisation under which all concrete SQL column datatypes (RDBBlob, RDBChar, RDBInteger, RDBDate, …) are grouped.
+ * @note §A.2.3 BNF production: "DataType => … =>! RDBColumnType =>
+ *   RDBInteger, RDBInt, RDBReal, RDBFloat, RDBDecimal, RDBNumber, RDBLong,
+ *   RDBChar, RDBVarchar, RDBString, RDBRaw, RDBDate, RDBTime stamp,
+ *   RDBRowid, RDBBoolean, RDBBlob, RDBClob, RDBNClob, RDBBFile".  The
+ *   leading `!` in the EBNF flags the production as abstract — only the
+ *   listed leaves are instantiable.  EMOF declares
+ *   `isAbstract="true" superClass="ASTMCore.ASTMSyntax.Types.DataType"`.
+ *   ASTM 1.0 Annex A is **non-normative** and **illustrative**; see the
+ *   wave-2.1 banner above for the spec's status disclaimer.
+ * @ownedAttributes (none -- all attributes inherited from DataType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBColumnType extends IDataType {
+  // structural marker -- concrete subclasses (RDBBlob, RDBBoolean, RDBChar,
+  // RDBClob, RDBDate, RDBDecimal, RDBFile, RDBFloat, RDBInt, RDBInteger,
+  // RDBLong, RDBNClob, RDBNumber, RDBRaw, RDBReal, RDBRowid, RDBString,
+  // RDBTimeStamp, RDBVarChar) carry no further structural members.
+}
+
+export abstract class RDBColumnType extends DataType implements IRDBColumnType {
+  override readonly metaClass: string = "RDBColumnType";
+}
+
+// ─── 195. RDBBlob (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBBlob
+ * @metaclass RDBBlob (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB binary large-object (BLOB) column datatype — an RDBColumnType realising the SQL BLOB primitive for storing variable-length unstructured binary payloads.
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBBlob".  EMOF declares the class
+ *   self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBBlob extends IRDBColumnType {
+  // pure marker interface -- RDBBlob has no additional structure.
+}
+
+export class RDBBlob extends RDBColumnType implements IRDBBlob {
+  override readonly metaClass = "RDBBlob" as const;
+}
+
+// ─── 196. RDBBoolean (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBBoolean
+ * @metaclass RDBBoolean (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB Boolean column datatype — an RDBColumnType realising the SQL BOOLEAN primitive (TRUE / FALSE / NULL).
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBBoolean".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBBoolean extends IRDBColumnType {
+  // pure marker interface -- RDBBoolean has no additional structure.
+}
+
+export class RDBBoolean extends RDBColumnType implements IRDBBoolean {
+  override readonly metaClass = "RDBBoolean" as const;
+}
+
+// ─── 197. RDBChar (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBChar
+ * @metaclass RDBChar (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB fixed-length character column datatype — an RDBColumnType realising the SQL CHAR primitive for fixed-width string payloads.
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBChar".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBChar extends IRDBColumnType {
+  // pure marker interface -- RDBChar has no additional structure.
+}
+
+export class RDBChar extends RDBColumnType implements IRDBChar {
+  override readonly metaClass = "RDBChar" as const;
+}
+
+// ─── 198. RDBClob (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBClob
+ * @metaclass RDBClob (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB character large-object (CLOB) column datatype — an RDBColumnType realising the SQL CLOB primitive for variable-length narrow-character string payloads.
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBClob".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBClob extends IRDBColumnType {
+  // pure marker interface -- RDBClob has no additional structure.
+}
+
+export class RDBClob extends RDBColumnType implements IRDBClob {
+  override readonly metaClass = "RDBClob" as const;
+}
+
+// ─── 199. RDBDate (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBDate
+ * @metaclass RDBDate (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB calendar-date column datatype — an RDBColumnType realising the SQL DATE primitive (year-month-day calendar value, no time component).
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBDate".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBDate extends IRDBColumnType {
+  // pure marker interface -- RDBDate has no additional structure.
+}
+
+export class RDBDate extends RDBColumnType implements IRDBDate {
+  override readonly metaClass = "RDBDate" as const;
+}
+
+// ─── 200. RDBDecimal (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBDecimal
+ * @metaclass RDBDecimal (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB fixed-precision decimal column datatype — an RDBColumnType realising the SQL DECIMAL / NUMERIC primitive for exact fixed-scale numeric payloads.
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBDecimal".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBDecimal extends IRDBColumnType {
+  // pure marker interface -- RDBDecimal has no additional structure.
+}
+
+export class RDBDecimal extends RDBColumnType implements IRDBDecimal {
+  override readonly metaClass = "RDBDecimal" as const;
+}
+
+// ─── 201. RDBFile (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBFile
+ * @metaclass RDBFile (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB out-of-row binary-file (BFILE) column datatype — an RDBColumnType realising the SQL BFILE primitive (vendor extension; Oracle-style external binary-file reference).
+ * @note §A.2.3 BNF lists this class as "RDBBFile" (with a leading "B")
+ *   but the EMOF source of truth declares
+ *   `xmi:id="ASTMCore.ASTMSyntax.Types.RDBFile"` (no leading "B").
+ *   We honour the EMOF spelling VERBATIM in the class name, interface
+ *   name, `metaClass` discriminator, and `@xmiId` line.  The PDF BNF
+ *   divergence is noted here so consumers can reconcile against either
+ *   artifact.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBFile extends IRDBColumnType {
+  // pure marker interface -- RDBFile has no additional structure.
+}
+
+export class RDBFile extends RDBColumnType implements IRDBFile {
+  override readonly metaClass = "RDBFile" as const;
+}
+
+// ─── 202. RDBFloat (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBFloat
+ * @metaclass RDBFloat (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB single-precision floating-point column datatype — an RDBColumnType realising the SQL FLOAT primitive for approximate numeric payloads.
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBFloat".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBFloat extends IRDBColumnType {
+  // pure marker interface -- RDBFloat has no additional structure.
+}
+
+export class RDBFloat extends RDBColumnType implements IRDBFloat {
+  override readonly metaClass = "RDBFloat" as const;
+}
+
+// ─── 203. RDBInt (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBInt
+ * @metaclass RDBInt (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB integer column datatype (abbreviated form) — an RDBColumnType realising the SQL INT primitive, vendor-typically equivalent to a 32-bit signed integer.
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBInteger, RDBInt".  EMOF
+ *   declares both `RDBInt` and `RDBInteger` as distinct, peer classes
+ *   (the SQL standard treats INT and INTEGER as synonyms; OMG ASTM
+ *   models them as separate metaclasses for vendor-spelling fidelity).
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBInt extends IRDBColumnType {
+  // pure marker interface -- RDBInt has no additional structure.
+}
+
+export class RDBInt extends RDBColumnType implements IRDBInt {
+  override readonly metaClass = "RDBInt" as const;
+}
+
+// ─── 204. RDBInteger (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBInteger
+ * @metaclass RDBInteger (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB integer column datatype (long form) — an RDBColumnType realising the SQL INTEGER primitive, vendor-typically equivalent to a 32-bit signed integer.
+ * @note §A.2.3 BNF: "RDBColumnType => RDBInteger, RDBInt".  EMOF declares
+ *   `RDBInteger` and `RDBInt` as distinct, peer classes — see the
+ *   sibling `RDBInt` note (§203 in this surface) for the rationale.
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBInteger extends IRDBColumnType {
+  // pure marker interface -- RDBInteger has no additional structure.
+}
+
+export class RDBInteger extends RDBColumnType implements IRDBInteger {
+  override readonly metaClass = "RDBInteger" as const;
+}
+
+// ─── 205. RDBLong (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBLong
+ * @metaclass RDBLong (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB long-integer column datatype — an RDBColumnType realising the SQL LONG / BIGINT primitive, vendor-typically equivalent to a 64-bit signed integer (or, on Oracle, a legacy variable-length character payload).
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBLong".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBLong extends IRDBColumnType {
+  // pure marker interface -- RDBLong has no additional structure.
+}
+
+export class RDBLong extends RDBColumnType implements IRDBLong {
+  override readonly metaClass = "RDBLong" as const;
+}
+
+// ─── 206. RDBNClob (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBNClob
+ * @metaclass RDBNClob (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB national-character large-object (NCLOB) column datatype — an RDBColumnType realising the SQL NCLOB primitive for variable-length wide-character (Unicode) string payloads.
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBNClob".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBNClob extends IRDBColumnType {
+  // pure marker interface -- RDBNClob has no additional structure.
+}
+
+export class RDBNClob extends RDBColumnType implements IRDBNClob {
+  override readonly metaClass = "RDBNClob" as const;
+}
+
+// ─── 207. RDBNumber (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBNumber
+ * @metaclass RDBNumber (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB generic numeric column datatype — an RDBColumnType realising the SQL NUMBER primitive (vendor extension; Oracle-style variable-precision numeric).
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBNumber".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBNumber extends IRDBColumnType {
+  // pure marker interface -- RDBNumber has no additional structure.
+}
+
+export class RDBNumber extends RDBColumnType implements IRDBNumber {
+  override readonly metaClass = "RDBNumber" as const;
+}
+
+// ─── 208. RDBRaw (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBRaw
+ * @metaclass RDBRaw (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB raw-byte column datatype — an RDBColumnType realising the SQL RAW primitive for variable-length untyped binary payloads (vendor extension; Oracle-style RAW(n)).
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBRaw".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBRaw extends IRDBColumnType {
+  // pure marker interface -- RDBRaw has no additional structure.
+}
+
+export class RDBRaw extends RDBColumnType implements IRDBRaw {
+  override readonly metaClass = "RDBRaw" as const;
+}
+
+// ─── 209. RDBReal (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBReal
+ * @metaclass RDBReal (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB real column datatype — an RDBColumnType realising the SQL REAL primitive (approximate single-precision floating-point numeric).
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBReal".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBReal extends IRDBColumnType {
+  // pure marker interface -- RDBReal has no additional structure.
+}
+
+export class RDBReal extends RDBColumnType implements IRDBReal {
+  override readonly metaClass = "RDBReal" as const;
+}
+
+// ─── 210. RDBRowid (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBRowid
+ * @metaclass RDBRowid (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB row-identifier column datatype — an RDBColumnType realising the SQL ROWID primitive (vendor extension; Oracle-style physical row address).
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBRowid".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBRowid extends IRDBColumnType {
+  // pure marker interface -- RDBRowid has no additional structure.
+}
+
+export class RDBRowid extends RDBColumnType implements IRDBRowid {
+  override readonly metaClass = "RDBRowid" as const;
+}
+
+// ─── 211. RDBString (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBString
+ * @metaclass RDBString (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB generic string column datatype — an RDBColumnType realising the generalised SQL STRING primitive (vendor extension; abstracts CHAR / VARCHAR / TEXT into one).
+ * @note §A.2.3 BNF: "RDBColumnType => … RDBString".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.RDBColumnType"`
+ *   and no own `ownedAttribute`.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBString extends IRDBColumnType {
+  // pure marker interface -- RDBString has no additional structure.
+}
+
+export class RDBString extends RDBColumnType implements IRDBString {
+  override readonly metaClass = "RDBString" as const;
+}
+
+// ─── 212. RDBTimeStamp (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBTimeStamp
+ * @metaclass RDBTimeStamp (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB timestamp column datatype — an RDBColumnType realising the SQL TIMESTAMP primitive (combined calendar-date plus time-of-day, optionally with sub-second precision and timezone).
+ * @note §A.2.3 BNF prints this class as "RDBTime stamp" (two tokens
+ *   separated by a space) but the EMOF source of truth declares
+ *   `xmi:id="ASTMCore.ASTMSyntax.Types.RDBTimeStamp"` (single token,
+ *   camel-cased).  We honour the EMOF spelling VERBATIM in the class
+ *   name, interface name, `metaClass` discriminator, and `@xmiId` line.
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBTimeStamp extends IRDBColumnType {
+  // pure marker interface -- RDBTimeStamp has no additional structure.
+}
+
+export class RDBTimeStamp extends RDBColumnType implements IRDBTimeStamp {
+  override readonly metaClass = "RDBTimeStamp" as const;
+}
+
+// ─── 213. RDBVarChar (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBVarChar
+ * @metaclass RDBVarChar (concrete)
+ * @generalization RDBColumnType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB variable-length character column datatype — an RDBColumnType realising the SQL VARCHAR primitive for bounded variable-width string payloads.
+ * @note §A.2.3 BNF prints this class as "RDBVarchar" (lowercase 'c') but
+ *   the EMOF source of truth declares
+ *   `xmi:id="ASTMCore.ASTMSyntax.Types.RDBVarChar"` (capital 'C').
+ *   We honour the EMOF spelling VERBATIM in the class name, interface
+ *   name, `metaClass` discriminator, and `@xmiId` line.  ASTM 1.0
+ *   Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from RDBColumnType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBVarChar extends IRDBColumnType {
+  // pure marker interface -- RDBVarChar has no additional structure.
+}
+
+export class RDBVarChar extends RDBColumnType implements IRDBVarChar {
+  override readonly metaClass = "RDBVarChar" as const;
+}
+
+// ─── 214. RDBCursorType (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBCursorType
+ * @metaclass RDBCursorType (concrete)
+ * @generalization DataType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB cursor datatype — a DataType specialisation representing the type of an embedded-SQL cursor handle (the value produced by RDBCursorDefinition and consumed by RDBOpen/Fetch/CloseCursorStatement).
+ * @note §A.2.3 BNF: "DataType => … => RDBCursorType".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.DataType"`
+ *   and no own `ownedAttribute`.  RDBCursorType is a direct DataType
+ *   extension (NOT an RDBColumnType) because cursors are not stored in
+ *   columns — they are control-flow handles for streaming row sets.
+ *   ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from DataType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBCursorType extends IDataType {
+  // pure marker interface -- RDBCursorType has no additional structure.
+}
+
+export class RDBCursorType extends DataType implements IRDBCursorType {
+  override readonly metaClass = "RDBCursorType" as const;
+}
+
+// ─── 215. RDBDataBaseType (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBDataBaseType
+ * @metaclass RDBDataBaseType (concrete)
+ * @generalization DataType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB database datatype — a DataType specialisation representing the type of a database identifier (the value produced by RDBDatabaseDefinition and referenced by RDBConnectStatement).
+ * @note §A.2.3 BNF: "DataType => RDBDataBaseType".  EMOF declares the
+ *   class with `xmi:id="ASTMCore.ASTMSyntax.Types.RDBDataBaseType"` —
+ *   note the capital 'B' in "Base" (conventional English would spell
+ *   "RDBDatabaseType", but the OMG xmi:id is the single source of
+ *   truth and we honour it VERBATIM).  RDBDataBaseType is a direct
+ *   DataType extension (NOT an RDBColumnType) because a database
+ *   handle is not stored in a column.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from DataType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBDataBaseType extends IDataType {
+  // pure marker interface -- RDBDataBaseType has no additional structure.
+}
+
+export class RDBDataBaseType extends DataType implements IRDBDataBaseType {
+  override readonly metaClass = "RDBDataBaseType" as const;
+}
+
+// ─── 216. RDBTableSpaceType (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBTableSpaceType
+ * @metaclass RDBTableSpaceType (concrete)
+ * @generalization DataType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB table-space datatype — a DataType specialisation representing the type of a table-space identifier (the storage-area handle produced by RDBTableSpaceDefinition).
+ * @note §A.2.3 BNF: "DataType => … => RDBTableSpaceType".  EMOF declares
+ *   the class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.DataType"`
+ *   and no own `ownedAttribute`.  RDBTableSpaceType is a direct DataType
+ *   extension (NOT an RDBColumnType) because table-spaces are storage
+ *   constructs, not column payloads.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from DataType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBTableSpaceType extends IDataType {
+  // pure marker interface -- RDBTableSpaceType has no additional structure.
+}
+
+export class RDBTableSpaceType extends DataType implements IRDBTableSpaceType {
+  override readonly metaClass = "RDBTableSpaceType" as const;
+}
+
+// ─── 217. RDBTableType (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBTableType
+ * @metaclass RDBTableType (concrete)
+ * @generalization DataType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB table datatype — a DataType specialisation representing the type of a table identifier (the relational-table handle produced by RDBTableDefinition).
+ * @note §A.2.3 BNF: "DataType => … => RDBTableType".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.DataType"`
+ *   and no own `ownedAttribute`.  RDBTableType is a direct DataType
+ *   extension (NOT an RDBColumnType) because a table handle is not
+ *   stored in a column.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from DataType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBTableType extends IDataType {
+  // pure marker interface -- RDBTableType has no additional structure.
+}
+
+export class RDBTableType extends DataType implements IRDBTableType {
+  override readonly metaClass = "RDBTableType" as const;
+}
+
+// ─── 218. RDBUserType (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBUserType
+ * @metaclass RDBUserType (concrete)
+ * @generalization DataType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB database-user datatype — a DataType specialisation representing the type of a database-user / schema-owner identifier (the principal-identity handle produced by RDBUserDefinition).
+ * @note §A.2.3 BNF: "DataType => … => RDBUserType".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.DataType"`
+ *   and no own `ownedAttribute`.  RDBUserType is a direct DataType
+ *   extension (NOT an RDBColumnType) because a user / schema-owner
+ *   handle is not stored in a column.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from DataType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBUserType extends IDataType {
+  // pure marker interface -- RDBUserType has no additional structure.
+}
+
+export class RDBUserType extends DataType implements IRDBUserType {
+  override readonly metaClass = "RDBUserType" as const;
+}
+
+// ─── 219. RDBViewType (§A.1.3, §A.2.3) ───
+/**
+ * @standard OMG ASTM 1.0 -- formal/2011-01-05
+ * @section §8.3.1, §A.1.3, §A.2.3
+ * @xmiId ASTMCore.ASTMSyntax.Types.RDBViewType
+ * @metaclass RDBViewType (concrete)
+ * @generalization DataType
+ * @definition (non-normative Annex A; spec carries no explicit Definition: paragraph) RDB view datatype — a DataType specialisation representing the type of a view identifier (the derived-relation handle produced by RDBViewDefinition).
+ * @note §A.2.3 BNF: "DataType => … => RDBViewType".  EMOF declares the
+ *   class self-closing with `superClass="ASTMCore.ASTMSyntax.Types.DataType"`
+ *   and no own `ownedAttribute`.  RDBViewType is a direct DataType
+ *   extension (NOT an RDBColumnType) because a view handle is not
+ *   stored in a column.  ASTM 1.0 Annex A is non-normative.
+ * @ownedAttributes (none -- all attributes inherited from DataType)
+ * @associationEnds
+ *   (none) -- ASTM declares attribute-style ownership rather than separate Associations
+ * @operations (none)
+ * @constraints (none declared)
+ */
+export interface IRDBViewType extends IDataType {
+  // pure marker interface -- RDBViewType has no additional structure.
+}
+
+export class RDBViewType extends DataType implements IRDBViewType {
+  override readonly metaClass = "RDBViewType" as const;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// END Implementer #6 (Wave 2.1). RDB Types COMPLETE: 26/26 metaclasses.
+// Cumulative: 219/249 (193 GASTM + 26 RDB Types).
+// Next wave: Implementer #7 — remaining 30 RDB SASTM classes (MinorSyntax,
+// DeclarationAndDefinition, Statement, Expression extensions).
+// ═══════════════════════════════════════════════════════════════════════════
